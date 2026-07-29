@@ -2,6 +2,7 @@
 .idea
 .intellijPlatform
 build
+.project
 # Devenv
 .devenv*
 devenv.local.nix

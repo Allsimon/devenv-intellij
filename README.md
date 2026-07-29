@@ -48,7 +48,7 @@ A generated project contains the following content structure:
 │   ├── libs.versions.toml  Version catalog
 ├── src                     Plugin sources
 │   └── main
-│       ├── kotlin/         Kotlin production sources
+│       ├── java/           Java production sources
 │       └── resources/      Plugin resources
 │           ├── META-INF/   Plugin configuration file and logo
 │           └── messages/   Message bundles
@@ -65,7 +65,8 @@ In addition to the configuration files, the most crucial part is the `src` direc
 and the manifest for our plugin – [plugin.xml][file:plugin.xml].
 
 > [!NOTE]
-> To use Java in your plugin, create the `/src/main/java` directory.
+> To use Kotlin in your plugin, create the `/src/main/kotlin` directory and apply the `org.jetbrains.kotlin.jvm` Gradle
+> plugin.
 
 The plugin logo is placed in `src/main/resources/META-INF/pluginIcon.svg`. See [Plugin Logo][docs:logo] for more
 information and logo requirements.
@@ -76,7 +77,7 @@ The [build.gradle.kts][file:build.gradle.kts] is the core of the project definit
 
 | Plugin                            | Description                                                                      |
 | --------------------------------- | -------------------------------------------------------------------------------- |
-| `org.jetbrains.kotlin.jvm`        | Adds Kotlin support                                                              |
+| `java`                            | Adds Java support                                                                |
 | `org.jetbrains.changelog`         | Simplifies patching the [CHANGELOG.md][file:CHANGELOG.md] file                   |
 | `org.jetbrains.intellij.platform` | The [IntelliJ Platform Gradle Plugin][docs:intellij-platform-gradle-plugin-docs] |
 
