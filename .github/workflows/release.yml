@@ -5,10 +5,9 @@
 name: Release
 on:
   release:
-    types: [ prereleased, released ]
+    types: [prereleased, released]
 
 jobs:
-
   # Prepare and publish the plugin to JetBrains Marketplace repository
   release:
     name: Publish Plugin
@@ -17,7 +16,6 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-
       # Free GitHub Actions Environment Disk Space
       - name: Maximize Build Space
         uses: jlumbroso/free-disk-space@v1.3.1
