@@ -1,4 +1,4 @@
-package org.nixos.intellij;
+package com.allsimon.intellij;
 
 import com.intellij.DynamicBundle;
 import java.util.function.Supplier;
