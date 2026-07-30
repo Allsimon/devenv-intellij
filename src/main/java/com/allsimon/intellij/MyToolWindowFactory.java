@@ -1,4 +1,4 @@
-package org.nixos.intellij;
+package com.allsimon.intellij;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
