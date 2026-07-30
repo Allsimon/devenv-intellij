@@ -49,5 +49,6 @@ jobs:
         run: devenv test
 
       # Build every devenv output, i.e. the packaged plugin
-      - name: Build outputs
-        run: devenv build
+      # Currently commented, the CI crash with: × Failed to build attribute: devenv.config.outputs.devenv-intellij: error: Nix daemon disconnected unexpectedly (maybe it crashed?)
+      # - name: Build outputs
+      #   run: devenv build
