@@ -3,6 +3,9 @@
 .intellijPlatform
 build
 .project
+.classpath
+bin
+.settings
 # Devenv
 .devenv*
 devenv.local.nix
