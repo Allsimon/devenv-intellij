@@ -41,6 +41,9 @@
         <directoryIndexExcludePolicy
                 implementation="com.allsimon.intellij.DevenvExcludePolicy"/>
 
+        <formattingService
+                implementation="com.allsimon.intellij.DevenvTreefmtFormattingService"/>
+
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>

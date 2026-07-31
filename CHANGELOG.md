@@ -11,3 +11,5 @@
   status, per-process start/stop/restart, a log snapshot, and `devenv up -d` / `devenv down` on the root node.
 - The `.devenv` state directory is now excluded from indexing and search, without modifying the module
   configuration.
+- Reformat Code now runs the project's own `treefmt` for the file types it is configured to format, so the
+  IDE and the `treefmt` git hook agree. Other file types keep using the IDE's built-in formatters.
