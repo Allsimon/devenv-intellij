@@ -6,6 +6,7 @@
     gradle.package = pkgs.gradle_9;
     lsp.enable = false;
   };
+  services.nginx.enable = true;
 
   # Keep the Gradle wrapper on the same Gradle as the shell and the packaged
   # build. 'copy' mode because the wrapper tasks rewrite this file in place,

@@ -21,6 +21,8 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.lsp</depends>
+    <!-- The Services tool window and its serviceViewContributor extension point live in modules.lang. -->
+    <depends>com.intellij.modules.lang</depends>
 
     <resource-bundle>messages.MyMessageBundle</resource-bundle>
 
@@ -29,6 +31,15 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="MyToolWindow" factoryClass="com.allsimon.intellij.MyToolWindowFactory"
                     icon="AllIcons.Toolwindows.ToolWindowPalette"/>
+
+        <platform.lsp.serverSupportProvider
+                implementation="com.allsimon.intellij.DevenvLspServerSupportProvider"/>
+
+        <serviceViewContributor
+                implementation="com.allsimon.intellij.DevenvServiceViewContributor"/>
+
+        <notificationGroup id="Devenv" displayType="BALLOON"
+                           bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>
 
 </idea-plugin>
