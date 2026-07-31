@@ -146,6 +146,36 @@ list**, not a crash.
 - `grep -n 'DevenvProcessManager' .intellijPlatform/sandbox/devenv-intellij/IU-*/log/idea.log` shows
   failing commands; failures of an explicit action (Start, Stop, …) are also reported as a balloon.
 
+## 6. Reformat Code didn't use treefmt
+
+[`DevenvTreefmtFormattingService`][file:DevenvTreefmtFormattingService] only claims a file when all
+of these hold, and otherwise stays out of the way so the IDE's own formatter runs — which is why the
+failure mode is "nothing happened" rather than an error:
+
+- The project has a `devenv.nix` at a content root (`DevenvCli.findDevenvRoot`, section 2).
+- `<devenv-root>/.devenv/profile/bin/treefmt` exists and is executable. devenv only generates that
+  wrapper once **`devenv shell` has built the profile** and `treefmt.enable = true` is set — a fresh
+  clone has neither. Run `devenv shell` once in the project.
+- The file's name matches the `includes` of some formatter in the generated config, and no
+  `excludes` entry. To see exactly what is configured, read the config the wrapper points at:
+
+  ```bash
+  grep -o -- '--config-file [^ ]*' .devenv/profile/bin/treefmt   # -> /nix/store/…-treefmt.toml
+  ```
+
+  A file type no formatter covers (Java, in this repo) is deliberately left to IntelliJ.
+
+The plugin calls `treefmt --stdin <path> --quiet` and replaces the document with **stdout**, so it
+formats unsaved buffers and never writes to disk itself. A non-zero exit leaves the document
+untouched and reports treefmt's stderr as an error balloon; the same happens in the paranoid case of
+a successful exit with empty output, which would otherwise blank the file.
+
+To reproduce outside the IDE, from the project root:
+
+```bash
+printf '{ x =    1; }\n' | .devenv/profile/bin/treefmt --stdin devenv.nix --quiet
+```
+
 ## Quick reference
 
 | Symptom in `idea.log`                                          | Likely cause                                                  |
@@ -155,6 +185,7 @@ list**, not a crash.
 | "Starting LSP server" then nothing / immediate `STDERR` error  | `devenv lsp` itself failed — reproduce it directly in a shell |
 | Full four-line healthy sequence + paired request/reply traffic | Server works; look at the editor/UI side, not the LSP wiring  |
 | No `devenv` node in Services at all                            | No `devenv.nix` at a content root, or no `processes` declared |
+| Reformat Code doesn't run treefmt                              | No `.devenv/profile` yet, or no formatter covers that file    |
 
 [file:build.gradle.kts]: ./build.gradle.kts
 [file:plugin.xml]: ./src/main/resources/META-INF/plugin.xml
@@ -162,4 +193,5 @@ list**, not a crash.
 [file:DevenvLspServerSupportProvider]: ./src/main/java/com/allsimon/intellij/DevenvLspServerSupportProvider.java
 [file:DevenvServiceViewContributor]: ./src/main/java/com/allsimon/intellij/DevenvServiceViewContributor.java
 [file:DevenvProcessManager]: ./src/main/java/com/allsimon/intellij/DevenvProcessManager.java
+[file:DevenvTreefmtFormattingService]: ./src/main/java/com/allsimon/intellij/DevenvTreefmtFormattingService.java
 [file:MyMessageBundle.properties]: ./src/main/resources/messages/MyMessageBundle.properties
