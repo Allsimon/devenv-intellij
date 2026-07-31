@@ -25,6 +25,8 @@ final class DevenvCli {
 
     private static final String CONFIG_FILE = "devenv.nix";
     private static final String LOCK_FILE = "devenv.lock";
+    /** Where devenv keeps generated shell scripts, caches and symlinks into the Nix store. */
+    static final String STATE_DIRECTORY = ".devenv";
 
     // devenv colours its output even when stdout/stderr are pipes, and honours neither NO_COLOR nor
     // CLICOLOR=0, so every byte we parse has to be stripped first.

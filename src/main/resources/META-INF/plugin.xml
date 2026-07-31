@@ -38,6 +38,9 @@
         <serviceViewContributor
                 implementation="com.allsimon.intellij.DevenvServiceViewContributor"/>
 
+        <directoryIndexExcludePolicy
+                implementation="com.allsimon.intellij.DevenvExcludePolicy"/>
+
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>
