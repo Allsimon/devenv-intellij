@@ -5,6 +5,7 @@
     gradle.package = pkgs.gradle_9;
     lsp.enable = false;
   };
+  services.nginx.enable = true;
 
   treefmt = {
     enable = true;
