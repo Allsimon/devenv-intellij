@@ -23,6 +23,9 @@
     <depends>com.intellij.modules.lsp</depends>
     <!-- The Services tool window and its serviceViewContributor extension point live in modules.lang. -->
     <depends>com.intellij.modules.lang</depends>
+    <!-- Optional: the Project SDK support needs the Java plugin, which only some IDEs bundle. Every
+         other feature of this plugin stays available in the ones that don't. -->
+    <depends optional="true" config-file="devenv-jdk.xml">com.intellij.modules.java</depends>
 
     <resource-bundle>messages.MyMessageBundle</resource-bundle>
 
