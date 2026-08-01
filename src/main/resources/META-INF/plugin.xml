@@ -28,6 +28,8 @@
     <depends optional="true" config-file="devenv-jdk.xml">com.intellij.modules.java</depends>
     <!-- Optional likewise: the Gradle distribution support needs the Gradle plugin. -->
     <depends optional="true" config-file="devenv-gradle.xml">com.intellij.gradle</depends>
+    <!-- And the Maven home support, the Maven plugin. -->
+    <depends optional="true" config-file="devenv-maven.xml">org.jetbrains.idea.maven</depends>
 
     <resource-bundle>messages.MyMessageBundle</resource-bundle>
 

@@ -1,0 +1,6 @@
+<!-- Loaded only in IDEs that bundle the Maven plugin; see the optional <depends> in plugin.xml. -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.allsimon.intellij.maven.DevenvMavenHomeActivity"/>
+    </extensions>
+</idea-plugin>

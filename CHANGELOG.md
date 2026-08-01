@@ -20,5 +20,8 @@
   Project SDK, which is the JDK `devenv.nix` declares. Both apply from the next Gradle reload on. Only IDEs
   bundling the Gradle plugin are concerned. A Java toolchain declared by the build is still resolved by
   Gradle itself.
+- A project whose `devenv.nix` sets `languages.java.maven.enable` now has its Maven home path set to the
+  Maven `devenv.nix` declares, instead of the one bundled with the IDE. It applies from the next Maven
+  reload on. Only IDEs bundling the Maven plugin are concerned.
 - Reformat Code now runs the project's own `treefmt` for the file types it is configured to format, so the
   IDE and the `treefmt` git hook agree. Other file types keep using the IDE's built-in formatters.
