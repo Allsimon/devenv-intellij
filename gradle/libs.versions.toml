@@ -1,5 +1,8 @@
 [versions]
 junit = "4.13.2"
+# The IntelliJ Platform every module compiles against. Kept here so the root project and the four
+# feature modules can't drift apart.
+intellijPlatform = "2025.3.5"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }

@@ -2,6 +2,10 @@ import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
 rootProject.name = "devenv-intellij"
 
+// One module per feature. Each depends on ':core' and on none of the others; the root project owns
+// plugin.xml and composes them all into a single plugin jar.
+include(":core", ":lsp", ":processes", ":treefmt")
+
 pluginManagement {
     plugins {
         id("org.jetbrains.changelog") version "2.5.0"
