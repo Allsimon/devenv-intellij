@@ -1,7 +1,8 @@
 # Troubleshooting the devenv plugin
 
-Two independent features can go wrong: the language server behind `devenv.nix` editing
-(sections 1-4), and the devenv processes shown in the Services tool window (section 5).
+Three independent features can go wrong, one per Gradle module: the language server behind
+`devenv.nix` editing (`:lsp`, sections 1-4), the devenv processes shown in the Services tool window
+(`:processes`, section 5), and Reformat Code delegating to treefmt (`:treefmt`, section 6).
 
 # Troubleshooting the devenv language server
 
@@ -131,7 +132,7 @@ The platform hides a contributor whose service list is empty, so **an absent nod
 list**, not a crash.
 
 - The node only appears for projects whose **content root** contains `devenv.nix` — the same
-  `findDevenvRoot` rule as section 2, now in `DevenvCli`. It also needs `devenv` on the PATH of the
+  `findDevenvRoot` rule as section 2, now in `DevenvCli` in the `:core` module. It also needs `devenv` on the PATH of the
   IDE process (section 3).
 - A devenv project with no `processes` in its `devenv.nix` legitimately shows nothing. Confirm with
   `devenv eval processes` in a terminal: an empty `{"processes": {}}` means there is nothing to show.
@@ -190,8 +191,8 @@ printf '{ x =    1; }\n' | .devenv/profile/bin/treefmt --stdin devenv.nix --quie
 [file:build.gradle.kts]: ./build.gradle.kts
 [file:plugin.xml]: ./src/main/resources/META-INF/plugin.xml
 [file:devenv.nix]: ./devenv.nix
-[file:DevenvLspServerSupportProvider]: ./src/main/java/com/allsimon/intellij/DevenvLspServerSupportProvider.java
-[file:DevenvServiceViewContributor]: ./src/main/java/com/allsimon/intellij/DevenvServiceViewContributor.java
-[file:DevenvProcessManager]: ./src/main/java/com/allsimon/intellij/DevenvProcessManager.java
-[file:DevenvTreefmtFormattingService]: ./src/main/java/com/allsimon/intellij/DevenvTreefmtFormattingService.java
-[file:MyMessageBundle.properties]: ./src/main/resources/messages/MyMessageBundle.properties
+[file:DevenvLspServerSupportProvider]: ./lsp/src/main/java/com/allsimon/intellij/lsp/DevenvLspServerSupportProvider.java
+[file:DevenvServiceViewContributor]: ./processes/src/main/java/com/allsimon/intellij/processes/DevenvServiceViewContributor.java
+[file:DevenvProcessManager]: ./processes/src/main/java/com/allsimon/intellij/processes/DevenvProcessManager.java
+[file:DevenvTreefmtFormattingService]: ./treefmt/src/main/java/com/allsimon/intellij/treefmt/DevenvTreefmtFormattingService.java
+[file:MyMessageBundle.properties]: ./core/src/main/resources/messages/MyMessageBundle.properties

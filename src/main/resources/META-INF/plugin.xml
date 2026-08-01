@@ -33,16 +33,16 @@
                     icon="AllIcons.Toolwindows.ToolWindowPalette"/>
 
         <platform.lsp.serverSupportProvider
-                implementation="com.allsimon.intellij.DevenvLspServerSupportProvider"/>
+                implementation="com.allsimon.intellij.lsp.DevenvLspServerSupportProvider"/>
 
         <serviceViewContributor
-                implementation="com.allsimon.intellij.DevenvServiceViewContributor"/>
+                implementation="com.allsimon.intellij.processes.DevenvServiceViewContributor"/>
 
         <directoryIndexExcludePolicy
-                implementation="com.allsimon.intellij.DevenvExcludePolicy"/>
+                implementation="com.allsimon.intellij.core.DevenvExcludePolicy"/>
 
         <formattingService
-                implementation="com.allsimon.intellij.DevenvTreefmtFormattingService"/>
+                implementation="com.allsimon.intellij.treefmt.DevenvTreefmtFormattingService"/>
 
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>

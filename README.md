@@ -37,7 +37,9 @@ The sample plugin adds a `My Tool Window` tool window with a simple functionalit
 
 ## Plugin structure
 
-A generated project contains the following content structure:
+The plugin is split into one Gradle subproject per feature. Each feature module depends on `:core`
+and on none of the others; the root project owns `plugin.xml` and composes every module into a
+single plugin jar.
 
 ```
 .
@@ -45,24 +47,39 @@ A generated project contains the following content structure:
 ├── .run/                   Predefined Run/Debug Configurations
 ├── gradle
 │   ├── wrapper/            Gradle Wrapper
-│   ├── libs.versions.toml  Version catalog
-├── src                     Plugin sources
+│   ├── libs.versions.toml  Version catalog (JUnit, IntelliJ Platform version)
+├── core/                   Locating and invoking the devenv CLI, message bundle, .devenv exclusion
+├── lsp/                    Nix language support, backed by 'devenv lsp'
+├── processes/              devenv processes in the Services tool window
+├── treefmt/                Reformat Code delegated to the project's treefmt
+├── src                     Plugin manifest and logo
 │   └── main
-│       ├── java/           Java production sources
-│       └── resources/      Plugin resources
-│           ├── META-INF/   Plugin configuration file and logo
-│           └── messages/   Message bundles
+│       └── resources/
+│           └── META-INF/   plugin.xml and pluginIcon.svg
 ├── .gitignore              Git ignoring rules
-├── build.gradle.kts        Gradle build configuration
+├── build.gradle.kts        Root build: composes the modules into the plugin
 ├── gradle.properties       Gradle configuration properties
 ├── gradlew                 *nix Gradle Wrapper script
 ├── gradlew.bat             Windows Gradle Wrapper script
 ├── README.md               This file
-└── settings.gradle.kts     Gradle project settings
+└── settings.gradle.kts     Gradle project settings and module list
 ```
 
-In addition to the configuration files, the most crucial part is the `src` directory, which contains our implementation
-and the manifest for our plugin – [plugin.xml][file:plugin.xml].
+Each module follows the usual `src/main/java` + `src/test/java` layout, under a package matching the
+module name (`com.allsimon.intellij.core`, `…lsp`, `…processes`, `…treefmt`). Only `core` exposes
+public API — everything else stays package-private inside its own module.
+
+A new feature means a new module: add it to `settings.gradle.kts`, copy one of the existing build
+files, and register its extension in [plugin.xml][file:plugin.xml] **and** as a
+`pluginComposedModule` in the root [build.gradle.kts][file:build.gradle.kts].
+
+> [!IMPORTANT]
+> It must be `pluginComposedModule`, not `pluginModule`. `pluginComposedModule` merges the module
+> into the single plugin jar, which is what lets the one `plugin.xml` name classes from any module.
+> `pluginModule` instead declares a [v2 content module][docs:content-modules], shipped as its own
+> `lib/modules/*.jar` and loaded only if `plugin.xml` declares it in a `<content>` block — without
+> that the IDE loads none of those classes, and every extension in the module silently goes missing
+> at runtime (`Cannot create extension (class=…)` in `idea.log`). Both compile perfectly happily.
 
 > [!NOTE]
 > To use Kotlin in your plugin, create the `/src/main/kotlin` directory and apply the `org.jetbrains.kotlin.jvm` Gradle
@@ -183,6 +200,7 @@ See [Syntax for issue forms](https://docs.github.com/en/communities/using-templa
 [docs:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#verifyPlugin
 [docs:logo]: https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html?from=IJPluginReadmeFile
 [docs:target-version]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#target-versions
+[docs:content-modules]: https://plugins.jetbrains.com/docs/intellij/plugin-content-modules.html
 [docs:testing]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#testing
 [file:build.gradle.kts]: ./build.gradle.kts
 [file:CHANGELOG.md]: ./CHANGELOG.md
