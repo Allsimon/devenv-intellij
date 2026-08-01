@@ -49,6 +49,7 @@ single plugin jar.
 │   ├── wrapper/            Gradle Wrapper
 │   ├── libs.versions.toml  Version catalog (JUnit, IntelliJ Platform version)
 ├── core/                   Locating and invoking the devenv CLI, message bundle, .devenv exclusion
+├── jdk/                    Project SDK set to the JDK declared under 'languages.java'
 ├── lsp/                    Nix language support, backed by 'devenv lsp'
 ├── processes/              devenv processes in the Services tool window
 ├── treefmt/                Reformat Code delegated to the project's treefmt
@@ -66,7 +67,7 @@ single plugin jar.
 ```
 
 Each module follows the usual `src/main/java` + `src/test/java` layout, under a package matching the
-module name (`com.allsimon.intellij.core`, `…lsp`, `…processes`, `…treefmt`). Only `core` exposes
+module name (`com.allsimon.intellij.core`, `…jdk`, `…lsp`, `…processes`, `…treefmt`). Only `core` exposes
 public API — everything else stays package-private inside its own module.
 
 A new feature means a new module: add it to `settings.gradle.kts`, copy one of the existing build
