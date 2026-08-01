@@ -30,6 +30,7 @@ dependencies {
         // Every feature module has to be listed here; a module missing from this list compiles fine
         // and then fails at runtime with a missing extension implementation.
         pluginComposedModule(implementation(project(":core")))
+        pluginComposedModule(implementation(project(":gradledist")))
         pluginComposedModule(implementation(project(":jdk")))
         pluginComposedModule(implementation(project(":lsp")))
         pluginComposedModule(implementation(project(":processes")))
