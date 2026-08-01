@@ -99,7 +99,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: tests-result
-          path: ${{ github.workspace }}/build/reports/tests
+          # Every test lives in a subproject, so this has to glob across modules.
+          path: ${{ github.workspace }}/*/build/reports/tests
 
   # Run plugin structure verification along with IntelliJ Plugin Verifier
   verify:
