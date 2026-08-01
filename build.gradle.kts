@@ -33,6 +33,7 @@ dependencies {
         pluginComposedModule(implementation(project(":gradledist")))
         pluginComposedModule(implementation(project(":jdk")))
         pluginComposedModule(implementation(project(":lsp")))
+        pluginComposedModule(implementation(project(":maven")))
         pluginComposedModule(implementation(project(":processes")))
         pluginComposedModule(implementation(project(":treefmt")))
     }
