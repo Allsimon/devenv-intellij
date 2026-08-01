@@ -26,6 +26,8 @@
     <!-- Optional: the Project SDK support needs the Java plugin, which only some IDEs bundle. Every
          other feature of this plugin stays available in the ones that don't. -->
     <depends optional="true" config-file="devenv-jdk.xml">com.intellij.modules.java</depends>
+    <!-- Optional likewise: the Gradle distribution support needs the Gradle plugin. -->
+    <depends optional="true" config-file="devenv-gradle.xml">com.intellij.gradle</depends>
 
     <resource-bundle>messages.MyMessageBundle</resource-bundle>
 

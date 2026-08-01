@@ -4,7 +4,9 @@ rootProject.name = "devenv-intellij"
 
 // One module per feature. Each depends on ':core' and on none of the others; the root project owns
 // plugin.xml and composes them all into a single plugin jar.
-include(":core", ":jdk", ":lsp", ":processes", ":treefmt")
+// ':gradledist' rather than ':gradle': the root already has a 'gradle' directory, holding the wrapper
+// and the version catalog.
+include(":core", ":gradledist", ":jdk", ":lsp", ":processes", ":treefmt")
 
 pluginManagement {
     plugins {
