@@ -2,6 +2,8 @@ package com.allsimon.intellij.treefmt;
 
 import com.allsimon.intellij.core.DevenvCli;
 import com.allsimon.intellij.core.DevenvExcludePolicy;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -54,11 +56,15 @@ final class DevenvTreefmt {
     }
 
     /**
-     * The treefmt of {@code project}, or {@code null} when there isn't one - the project isn't a
-     * devenv project, 'devenv shell' has never built its profile, or treefmt isn't enabled. Callers
-     * are expected to fall back to the IDE's own formatting in that case.
+     * The treefmt of {@code project}, or {@code null} when there isn't one - the feature is switched
+     * off, the project isn't a devenv project, 'devenv shell' has never built its profile, or treefmt
+     * isn't enabled. Callers are expected to fall back to the IDE's own formatting in that case.
      */
     static @Nullable DevenvTreefmt resolve(@NotNull Project project) {
+        if (!DevenvSettings.getInstance().isEnabled(DevenvFeature.TREEFMT)) {
+            return null;
+        }
+
         VirtualFile root = DevenvCli.findDevenvRoot(project);
         if (root == null) {
             return null;

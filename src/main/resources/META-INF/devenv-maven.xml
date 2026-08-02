@@ -3,4 +3,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.allsimon.intellij.maven.DevenvMavenHomeActivity"/>
     </extensions>
+
+    <applicationListeners>
+        <listener class="com.allsimon.intellij.maven.DevenvMavenSettingsListener"
+                  topic="com.allsimon.intellij.core.DevenvSettingsListener"/>
+    </applicationListeners>
 </idea-plugin>

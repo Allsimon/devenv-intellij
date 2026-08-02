@@ -1,6 +1,8 @@
 package com.allsimon.intellij.lsp;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -19,7 +21,8 @@ public final class DevenvLspServerSupportProvider implements LspServerSupportPro
     @Override
     public void fileOpened(@NotNull Project project, @NotNull VirtualFile file,
                            @NotNull LspServerStarter serverStarter) {
-        if (!DevenvLspServerDescriptor.isNixFile(file)) {
+        if (!DevenvSettings.getInstance().isEnabled(DevenvFeature.LSP)
+                || !DevenvLspServerDescriptor.isNixFile(file)) {
             return;
         }
 

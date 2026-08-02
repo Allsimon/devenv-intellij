@@ -16,7 +16,8 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  * Excluding this way only affects this IDE's view of the project: unlike 'Mark Directory as |
  * Excluded' it doesn't touch the module's .iml file, so nothing lands in version control. The
- * flip side is that the exclusion can't be undone from the project tree.
+ * flip side is that the exclusion can't be undone from the project tree - only from
+ * {@link DevenvSettingsConfigurable the settings page}.
  */
 public final class DevenvExcludePolicy implements DirectoryIndexExcludePolicy {
     private final Project project;
@@ -27,6 +28,10 @@ public final class DevenvExcludePolicy implements DirectoryIndexExcludePolicy {
 
     @Override
     public String @NotNull [] getExcludeUrlsForProject() {
+        if (!DevenvSettings.getInstance().isEnabled(DevenvFeature.EXCLUDE)) {
+            return ArrayUtilRt.EMPTY_STRING_ARRAY;
+        }
+
         VirtualFile devenvRoot = DevenvCli.findDevenvRoot(project);
         if (devenvRoot == null) {
             return ArrayUtilRt.EMPTY_STRING_ARRAY;

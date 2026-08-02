@@ -48,7 +48,7 @@ single plugin jar.
 ├── gradle
 │   ├── wrapper/            Gradle Wrapper
 │   ├── libs.versions.toml  Version catalog (JUnit, IntelliJ Platform version)
-├── core/                   Locating and invoking the devenv CLI, message bundle, .devenv exclusion
+├── core/                   Locating and invoking the devenv CLI, message bundle, .devenv exclusion, settings page
 ├── gradledist/             Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
 ├── jdk/                    Project SDK set to the JDK declared under 'languages.java'
 ├── lsp/                    Nix language support, backed by 'devenv lsp'
@@ -76,6 +76,18 @@ module.
 A new feature means a new module: add it to `settings.gradle.kts`, copy one of the existing build
 files, and register its extension in [plugin.xml][file:plugin.xml] **and** as a
 `pluginComposedModule` in the root [build.gradle.kts][file:build.gradle.kts].
+
+It also means a new constant in `core`'s `DevenvFeature`, so that the feature gets its switch on the
+_Settings | Tools | Devenv_ page — every feature can be turned off there, and all of them are on by
+default. The constant names the `DevenvFeatureGroup` its section of the page belongs to, one per part
+of devenv rather than per module, and the constants of a group have to stay together: enum order is
+the order of the page.
+
+A module reads its own switch with `DevenvSettings.getInstance().isEnabled(…)` at the point
+where it would do its work, and registers a `DevenvSettingsListener` in `plugin.xml` so that
+switching it takes effect in the projects already open. The switches are application-level: one
+choice for every project of the IDE, stored in `devenv.xml` in the IDE's config directory, which
+holds only the features that were turned off.
 
 > [!IMPORTANT]
 > It must be `pluginComposedModule`, not `pluginModule`. `pluginComposedModule` merges the module

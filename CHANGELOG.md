@@ -23,5 +23,10 @@
 - A project whose `devenv.nix` sets `languages.java.maven.enable` now has its Maven home path set to the
   Maven `devenv.nix` declares, instead of the one bundled with the IDE. It applies from the next Maven
   reload on. Only IDEs bundling the Maven plugin are concerned.
+- Every feature above can now be turned off individually under _Settings | Tools | Devenv_, in sections
+  named after the part of devenv each belongs to. They are all on by default, the choice applies to every
+  project of the IDE, and switching one takes effect in the projects already open. Turning a feature off only stops the plugin from applying it: the Project SDK,
+  the Gradle distribution and the Maven home it last set stay as they are, and are from then on the
+  user's to change.
 - Reformat Code now runs the project's own `treefmt` for the file types it is configured to format, so the
   IDE and the `treefmt` git hook agree. Other file types keep using the IDE's built-in formatters.

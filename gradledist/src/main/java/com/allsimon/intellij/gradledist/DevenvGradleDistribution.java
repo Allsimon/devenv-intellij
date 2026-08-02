@@ -1,6 +1,8 @@
 package com.allsimon.intellij.gradledist;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
@@ -42,7 +44,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * whichever settings are configured and need no watching.
  * <p>
  * The change takes effect at the next Gradle reload; nothing here triggers one, since a sync is the
- * user's to ask for.
+ * user's to ask for. Switching the feature off in Settings | Tools | Devenv stops the plugin
+ * touching the linked builds, which is how a distribution chosen by hand survives.
  * <p>
  * A build declaring a Java toolchain still resolves that toolchain the Gradle way, which may well
  * mean downloading a JDK of its own: that is the build's decision, not a setting of the IDE, and
@@ -116,13 +119,13 @@ final class DevenvGradleDistribution implements Disposable {
     /** Re-applies the Gradle of the last evaluation, without asking devenv again. */
     private void reapply() {
         Path home = resolvedHome;
-        if (home != null && !project.isDisposed()) {
+        if (home != null && !project.isDisposed() && isFeatureEnabled()) {
             ApplicationManager.getApplication().invokeLater(() -> apply(home), project.getDisposed());
         }
     }
 
     private void configureAsync() {
-        if (project.isDisposed() || !inFlight.compareAndSet(false, true)) {
+        if (project.isDisposed() || !isFeatureEnabled() || !inFlight.compareAndSet(false, true)) {
             return;
         }
 
@@ -146,6 +149,15 @@ final class DevenvGradleDistribution implements Disposable {
             inFlight.set(false);
             throw e;
         }
+    }
+
+    /**
+     * The switch is read here rather than in {@link #start()} so that the listeners stay subscribed
+     * while the feature is off: switching it back on then needs nothing more than another
+     * {@code start()}, and the linked builds are pointed back at the devenv Gradle straight away.
+     */
+    private static boolean isFeatureEnabled() {
+        return DevenvSettings.getInstance().isEnabled(DevenvFeature.GRADLE);
     }
 
     private void configure() {

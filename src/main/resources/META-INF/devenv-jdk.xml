@@ -3,4 +3,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.allsimon.intellij.jdk.DevenvProjectSdkActivity"/>
     </extensions>
+
+    <applicationListeners>
+        <listener class="com.allsimon.intellij.jdk.DevenvJdkSettingsListener"
+                  topic="com.allsimon.intellij.core.DevenvSettingsListener"/>
+    </applicationListeners>
 </idea-plugin>

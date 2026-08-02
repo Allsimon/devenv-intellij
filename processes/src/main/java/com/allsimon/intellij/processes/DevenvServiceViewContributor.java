@@ -1,6 +1,8 @@
 package com.allsimon.intellij.processes;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.intellij.execution.services.ServiceViewContributor;
 import com.intellij.execution.services.ServiceViewDescriptor;
 import com.intellij.openapi.project.Project;
@@ -24,7 +26,9 @@ public final class DevenvServiceViewContributor implements ServiceViewContributo
 
     @Override
     public @NotNull List<DevenvProcess> getServices(@NotNull Project project) {
-        if (DevenvCli.findDevenvRoot(project) == null) {
+        // The enablement check comes first, so a disabled feature never even wakes the manager up.
+        if (!DevenvSettings.getInstance().isEnabled(DevenvFeature.PROCESSES)
+                || DevenvCli.findDevenvRoot(project) == null) {
             return List.of();
         }
         return DevenvProcessManager.getInstance(project).getSnapshot();

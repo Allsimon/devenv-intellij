@@ -1,6 +1,8 @@
 package com.allsimon.intellij.jdk;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
@@ -37,7 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A devenv project states its toolchain in devenv.nix, so the IDE has no business asking the user to
  * pick a JDK by hand: {@code languages.java.enable} means "this project builds with that JDK", and
  * this service makes the Project SDK say the same thing - at startup and again whenever devenv.nix
- * changes. A JDK the user selected by hand is therefore overwritten, on purpose.
+ * changes. A JDK the user selected by hand is therefore overwritten, on purpose; the way to keep one
+ * is to switch this feature off in Settings | Tools | Devenv, which stops the plugin touching the
+ * Project SDK at all and leaves whatever it last set in place.
  * <p>
  * Only the Project SDK is touched. A Gradle or Maven build keeps compiling with whatever JVM its own
  * settings name, which the plugin deliberately leaves alone - but importing that build does get a say
@@ -132,7 +136,7 @@ final class DevenvProjectSdk implements Disposable {
      */
     private void reapply() {
         String home = resolvedHome;
-        if (home == null || project.isDisposed()) {
+        if (home == null || project.isDisposed() || !isFeatureEnabled()) {
             return;
         }
         if (isDevenvSdk(ProjectRootManager.getInstance(project).getProjectSdk(), home)) {
@@ -141,12 +145,21 @@ final class DevenvProjectSdk implements Disposable {
         ApplicationManager.getApplication().invokeLater(() -> apply(home), project.getDisposed());
     }
 
+    /**
+     * The switch is read here rather than in {@link #start()} so that the listeners stay subscribed
+     * while the feature is off: switching it back on then needs nothing more than another
+     * {@code start()}, and the SDK is put back without reopening the project.
+     */
+    private static boolean isFeatureEnabled() {
+        return DevenvSettings.getInstance().isEnabled(DevenvFeature.JDK);
+    }
+
     private boolean isDevenvSdk(@Nullable Sdk sdk, @NotNull String home) {
         return sdk != null && sdkName().equals(sdk.getName()) && home.equals(sdk.getHomePath());
     }
 
     private void configureAsync() {
-        if (project.isDisposed() || !inFlight.compareAndSet(false, true)) {
+        if (project.isDisposed() || !isFeatureEnabled() || !inFlight.compareAndSet(false, true)) {
             return;
         }
 

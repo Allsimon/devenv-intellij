@@ -53,6 +53,24 @@
 
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
+
+        <!-- Settings | Tools | Devenv: one switch per feature, all of them on by default. -->
+        <applicationConfigurable parentId="tools" id="com.allsimon.devenv.settings"
+                                 instance="com.allsimon.intellij.core.DevenvSettingsConfigurable"
+                                 bundle="messages.MyMessageBundle" key="settings.devenv.displayName"/>
     </extensions>
+
+    <!-- One listener per feature module, so that switching a feature takes effect in the projects
+         already open. The topic is application-level, hence 'applicationListeners': each listener
+         iterates over the open projects itself. The Project SDK, Gradle and Maven ones live in the
+         optional configuration files, alongside the features they belong to. -->
+    <applicationListeners>
+        <listener class="com.allsimon.intellij.core.DevenvExcludeSettingsListener"
+                  topic="com.allsimon.intellij.core.DevenvSettingsListener"/>
+        <listener class="com.allsimon.intellij.lsp.DevenvLspSettingsListener"
+                  topic="com.allsimon.intellij.core.DevenvSettingsListener"/>
+        <listener class="com.allsimon.intellij.processes.DevenvProcessesSettingsListener"
+                  topic="com.allsimon.intellij.core.DevenvSettingsListener"/>
+    </applicationListeners>
 
 </idea-plugin>

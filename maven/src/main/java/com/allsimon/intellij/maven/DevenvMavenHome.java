@@ -1,6 +1,8 @@
 package com.allsimon.intellij.maven;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
@@ -36,7 +38,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * one per linked build, so setting it at startup and on every later devenv.nix change is enough.
  * <p>
  * The change takes effect at the next Maven reload; nothing here triggers one, since a reimport is
- * the user's to ask for.
+ * the user's to ask for. Switching the feature off in Settings | Tools | Devenv stops the plugin
+ * touching the Maven home, which is how one set by hand survives.
  */
 @Service(Service.Level.PROJECT)
 final class DevenvMavenHome implements Disposable {
@@ -83,7 +86,7 @@ final class DevenvMavenHome implements Disposable {
     }
 
     private void configureAsync() {
-        if (project.isDisposed() || !inFlight.compareAndSet(false, true)) {
+        if (project.isDisposed() || !isFeatureEnabled() || !inFlight.compareAndSet(false, true)) {
             return;
         }
 
@@ -107,6 +110,15 @@ final class DevenvMavenHome implements Disposable {
             inFlight.set(false);
             throw e;
         }
+    }
+
+    /**
+     * The switch is read here rather than in {@link #start()} so that the devenv.nix listener stays
+     * subscribed while the feature is off: switching it back on then needs nothing more than another
+     * {@code start()}.
+     */
+    private static boolean isFeatureEnabled() {
+        return DevenvSettings.getInstance().isEnabled(DevenvFeature.MAVEN);
     }
 
     private void configure() {

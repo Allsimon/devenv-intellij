@@ -1,6 +1,8 @@
 package com.allsimon.intellij.processes;
 
 import com.allsimon.intellij.core.DevenvCli;
+import com.allsimon.intellij.core.DevenvFeature;
+import com.allsimon.intellij.core.DevenvSettings;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -19,6 +21,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +63,8 @@ final class DevenvProcessManager implements Disposable {
     /** Result of the last {@code devenv eval processes}; {@code null} until it has run at least once. */
     private volatile List<DevenvProcess> declared;
     private volatile ScheduledFuture<?> poller;
+    /** Held so that polling can be taken down again when the feature is switched off. */
+    private volatile MessageBusConnection connection;
 
     DevenvProcessManager(@NotNull Project project) {
         this.project = project;
@@ -109,7 +114,9 @@ final class DevenvProcessManager implements Disposable {
             return;
         }
 
-        project.getMessageBus().connect(this).subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+        MessageBusConnection busConnection = project.getMessageBus().connect(this);
+        connection = busConnection;
+        busConnection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
             @Override
             public void after(@NotNull List<? extends VFileEvent> events) {
                 for (VFileEvent event : events) {
@@ -124,6 +131,39 @@ final class DevenvProcessManager implements Disposable {
 
         poller = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(
                 this::poll, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Applies a change to the Processes feature: switched off, everything this manager runs is taken
+     * down and the tree is reset so the devenv node leaves the Services tool window; switched on, the
+     * reset alone is enough - the tool window asks the contributor for its services again, which is
+     * what starts the polling back up.
+     */
+    void featureToggled() {
+        if (!DevenvSettings.getInstance().isEnabled(DevenvFeature.PROCESSES)) {
+            stopPolling();
+        }
+        fireReset();
+    }
+
+    private void stopPolling() {
+        ScheduledFuture<?> currentPoller = poller;
+        if (currentPoller != null) {
+            currentPoller.cancel(false);
+            poller = null;
+        }
+        MessageBusConnection currentConnection = connection;
+        if (currentConnection != null) {
+            currentConnection.disconnect();
+            connection = null;
+        }
+        snapshot = List.of();
+        // Dropped rather than kept for a later restart: the devenv.nix listener has just been
+        // disconnected, so from here on nothing would notice the declarations going stale.
+        declared = null;
+        descriptors.clear();
+        // Last: until this is cleared nothing can start a second poller beside the one just cancelled.
+        pollingStarted.set(false);
     }
 
     /** scheduleWithFixedDelay stops rescheduling as soon as one run throws, so nothing may escape here. */
@@ -310,6 +350,13 @@ final class DevenvProcessManager implements Disposable {
             return;
         }
         snapshot = processes;
+        fireReset();
+    }
+
+    private void fireReset() {
+        if (project.isDisposed()) {
+            return;
+        }
         project.getMessageBus()
                 .syncPublisher(ServiceEventListener.TOPIC)
                 .handle(ServiceEventListener.ServiceEvent.createResetEvent(DevenvServiceViewContributor.class));
