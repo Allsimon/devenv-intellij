@@ -1,0 +1,54 @@
+name: devenv
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Test the developer environment and build the plugin through Nix
+  devenv:
+    name: Test and build
+    runs-on: ubuntu-latest
+    steps:
+      # Free GitHub Actions Environment Disk Space
+      # 'devenv build' downloads and extracts the full IntelliJ IDEA distribution
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          large-packages: false
+
+      # Check out the current repository
+      - name: Fetch Sources
+        uses: actions/checkout@v7
+
+      # Install Nix
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      # Use the public devenv binary cache
+      # Add 'authToken' and your own cache name here to also push build results
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      # Install devenv.sh
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+
+      # Build the developer shell and run the git hooks
+      - name: Run tests
+        run: devenv test
+
+      # Build every devenv output, i.e. the packaged plugin
+      # Currently commented, the CI crash with: × Failed to build attribute: devenv.config.outputs.devenv-intellij: error: Nix daemon disconnected unexpectedly (maybe it crashed?)
+      # - name: Build outputs
+      #   run: devenv build
