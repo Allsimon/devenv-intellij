@@ -106,13 +106,28 @@ public class DevenvLspIntegrationTest {
         DefinitionParams definitionParams = new DefinitionParams(
                 new TextDocumentIdentifier(uri), new Position(line, character));
         // First eval after a cold start builds nixd's option/nixpkgs attrset cache from scratch,
-        // which can take minutes on an unwarmed store.
-        Either<List<? extends Location>, List<? extends LocationLink>> result =
-                server.getTextDocumentService().definition(definitionParams).get(5, TimeUnit.MINUTES);
-
-        boolean resolved = result != null
-                && ((result.isLeft() && !result.getLeft().isEmpty())
-                    || (result.isRight() && !result.getRight().isEmpty()));
+        // which can take minutes on an unwarmed store. nixd doesn't make the request wait for it:
+        // until the option provider is evaluated it answers straight away, with null or with
+        // 'attrname languages not found in attrset'. So poll rather than trust the first reply.
+        long deadline = System.nanoTime() + TimeUnit.MINUTES.toNanos(5);
+        Object result = null;
+        boolean resolved = false;
+        while (!resolved && System.nanoTime() < deadline) {
+            try {
+                Either<List<? extends Location>, List<? extends LocationLink>> definition =
+                        server.getTextDocumentService().definition(definitionParams).get(1, TimeUnit.MINUTES);
+                result = definition;
+                resolved = definition != null
+                        && ((definition.isLeft() && !definition.getLeft().isEmpty())
+                            || (definition.isRight() && !definition.getRight().isEmpty()));
+            } catch (java.util.concurrent.ExecutionException e) {
+                // The 'not found in attrset' error nixd answers with while it is still evaluating.
+                result = e.getCause();
+            }
+            if (!resolved) {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+            }
+        }
         assertTrue("expected 'languages.java.enable' to resolve to a definition, got: " + result, resolved);
 
         server.shutdown().get(10, TimeUnit.SECONDS);

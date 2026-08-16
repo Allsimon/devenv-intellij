@@ -37,9 +37,8 @@ The sample plugin adds a `My Tool Window` tool window with a simple functionalit
 
 ## Plugin structure
 
-The plugin is split into one Gradle subproject per feature. Each feature module depends on `:core`
-and on none of the others; the root project owns `plugin.xml` and composes every module into a
-single plugin jar.
+The plugin is a single Gradle module, with one Java package per feature. `core` holds what the other
+packages share; each feature package depends on it and on none of the others.
 
 ```
 .
@@ -48,42 +47,38 @@ single plugin jar.
 ├── gradle
 │   ├── wrapper/            Gradle Wrapper
 │   ├── libs.versions.toml  Version catalog (JUnit, IntelliJ Platform version)
-├── core/                   Locating and invoking the devenv CLI, message bundle, .devenv exclusion
-├── gradledist/             Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
-├── jdk/                    Project SDK set to the JDK declared under 'languages.java'
-├── lsp/                    Nix language support, backed by 'devenv lsp'
-├── maven/                  Maven home path taken from 'languages.java.maven'
-├── processes/              devenv processes in the Services tool window
-├── treefmt/                Reformat Code delegated to the project's treefmt
-├── src                     Plugin manifest and logo
-│   └── main
-│       └── resources/
-│           └── META-INF/   plugin.xml and pluginIcon.svg
+├── src
+│   ├── main
+│   │   ├── java/com/allsimon/intellij/
+│   │   │   ├── core/       Locating and invoking the devenv CLI, message bundle, .devenv exclusion
+│   │   │   ├── gradledist/ Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
+│   │   │   ├── jdk/        Project SDK set to the JDK declared under 'languages.java'
+│   │   │   ├── lsp/        Nix language support, backed by 'devenv lsp'
+│   │   │   ├── maven/      Maven home path taken from 'languages.java.maven'
+│   │   │   ├── processes/  devenv processes in the Services tool window
+│   │   │   └── treefmt/    Reformat Code delegated to the project's treefmt
+│   │   └── resources/
+│   │       ├── META-INF/   plugin.xml, the optional configuration files and pluginIcon.svg
+│   │       └── messages/   Message bundle
+│   └── test
+│       └── java/           Tests, one package per feature
 ├── .gitignore              Git ignoring rules
-├── build.gradle.kts        Root build: composes the modules into the plugin
+├── build.gradle.kts        Build script
 ├── gradle.properties       Gradle configuration properties
 ├── gradlew                 *nix Gradle Wrapper script
 ├── gradlew.bat             Windows Gradle Wrapper script
 ├── README.md               This file
-└── settings.gradle.kts     Gradle project settings and module list
+└── settings.gradle.kts     Gradle project settings
 ```
 
-Each module follows the usual `src/main/java` + `src/test/java` layout, under a package matching the
-module name (`com.allsimon.intellij.core`, `…gradledist`, `…jdk`, `…lsp`, `…maven`, `…processes`,
-`…treefmt`). Only `core` exposes public API — everything else stays package-private inside its own
-module.
+`gradledist` rather than `gradle`: the repository root already has a `gradle` directory, holding the
+wrapper and the version catalog. Only `core` exposes public API — everything else stays
+package-private inside its own package.
 
-A new feature means a new module: add it to `settings.gradle.kts`, copy one of the existing build
-files, and register its extension in [plugin.xml][file:plugin.xml] **and** as a
-`pluginComposedModule` in the root [build.gradle.kts][file:build.gradle.kts].
-
-> [!IMPORTANT]
-> It must be `pluginComposedModule`, not `pluginModule`. `pluginComposedModule` merges the module
-> into the single plugin jar, which is what lets the one `plugin.xml` name classes from any module.
-> `pluginModule` instead declares a [v2 content module][docs:content-modules], shipped as its own
-> `lib/modules/*.jar` and loaded only if `plugin.xml` declares it in a `<content>` block — without
-> that the IDE loads none of those classes, and every extension in the module silently goes missing
-> at runtime (`Cannot create extension (class=…)` in `idea.log`). Both compile perfectly happily.
+A new feature means a new package under `com.allsimon.intellij`, and its extension registered in
+[plugin.xml][file:plugin.xml]. A feature that needs a bundled plugin the IDE may not have goes in one
+of the optional configuration files instead, next to a `bundledPlugin` dependency in
+[build.gradle.kts][file:build.gradle.kts] and an optional `<depends>` in `plugin.xml`.
 
 > [!NOTE]
 > To use Kotlin in your plugin, create the `/src/main/kotlin` directory and apply the `org.jetbrains.kotlin.jvm` Gradle
@@ -204,7 +199,6 @@ See [Syntax for issue forms](https://docs.github.com/en/communities/using-templa
 [docs:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#verifyPlugin
 [docs:logo]: https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html?from=IJPluginReadmeFile
 [docs:target-version]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#target-versions
-[docs:content-modules]: https://plugins.jetbrains.com/docs/intellij/plugin-content-modules.html
 [docs:testing]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#testing
 [file:build.gradle.kts]: ./build.gradle.kts
 [file:CHANGELOG.md]: ./CHANGELOG.md

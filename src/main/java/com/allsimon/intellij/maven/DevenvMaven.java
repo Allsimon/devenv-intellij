@@ -4,6 +4,7 @@ import com.allsimon.intellij.core.DevenvCli;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
@@ -95,7 +96,15 @@ final class DevenvMaven {
      * builds with something else.
      */
     static @Nullable String parsePackage(@NotNull String evalOutput) {
-        JsonElement root = JsonParser.parseString(DevenvCli.stripAnsi(evalOutput));
+        JsonElement root;
+        try {
+            root = JsonParser.parseString(DevenvCli.stripAnsi(evalOutput));
+        } catch (JsonSyntaxException e) {
+            // Anything but JSON means devenv printed something else entirely - a progress line or a
+            // message this version doesn't put on stderr. Nothing to read a store path out of.
+            LOG.warn("'devenv eval' printed no JSON document", e);
+            return null;
+        }
         if (!root.isJsonObject()) {
             return null;
         }

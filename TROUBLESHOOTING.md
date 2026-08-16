@@ -1,8 +1,8 @@
 # Troubleshooting the devenv plugin
 
-Three independent features can go wrong, one per Gradle module: the language server behind
-`devenv.nix` editing (`:lsp`, sections 1-4), the devenv processes shown in the Services tool window
-(`:processes`, section 5), and Reformat Code delegating to treefmt (`:treefmt`, section 6).
+Three independent features can go wrong, one per package: the language server behind `devenv.nix`
+editing (`lsp`, sections 1-4), the devenv processes shown in the Services tool window (`processes`,
+section 5), and Reformat Code delegating to treefmt (`treefmt`, section 6).
 
 # Troubleshooting the devenv language server
 
@@ -132,8 +132,8 @@ The platform hides a contributor whose service list is empty, so **an absent nod
 list**, not a crash.
 
 - The node only appears for projects whose **content root** contains `devenv.nix` — the same
-  `findDevenvRoot` rule as section 2, now in `DevenvCli` in the `:core` module. It also needs `devenv` on the PATH of the
-  IDE process (section 3).
+  `findDevenvRoot` rule as section 2, now in `DevenvCli` in the `core` package. It also needs
+  `devenv` on the PATH of the IDE process (section 3).
 - A devenv project with no `processes` in its `devenv.nix` legitimately shows nothing. Confirm with
   `devenv eval processes` in a terminal: an empty `{"processes": {}}` means there is nothing to show.
 - Newly declared processes appear after the plugin re-evaluates `devenv.nix`, which happens when the
