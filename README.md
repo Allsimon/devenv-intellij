@@ -71,21 +71,11 @@ packages share; each feature package depends on it and on none of the others.
 └── settings.gradle.kts     Gradle project settings
 ```
 
-`gradledist` rather than `gradle`: the repository root already has a `gradle` directory, holding the
-wrapper and the version catalog. Only `core` exposes public API — everything else stays
-package-private inside its own package.
+Only `core` exposes public API — everything else stays package-private inside its own package.
 
-A new feature means a new package under `com.allsimon.intellij`, and its extension registered in
-[plugin.xml][file:plugin.xml]. A feature that needs a bundled plugin the IDE may not have goes in one
-of the optional configuration files instead, next to a `bundledPlugin` dependency in
-[build.gradle.kts][file:build.gradle.kts] and an optional `<depends>` in `plugin.xml`.
+A new feature means a new package under `com.allsimon.intellij`, and its extension registered in [plugin.xml][file:plugin.xml]. A feature that needs a bundled plugin the IDE may not have goes in one of the optional configuration files instead, next to a `bundledPlugin` dependency in [build.gradle.kts][file:build.gradle.kts] and an optional `<depends>` in `plugin.xml`.
 
-> [!NOTE]
-> To use Kotlin in your plugin, create the `/src/main/kotlin` directory and apply the `org.jetbrains.kotlin.jvm` Gradle
-> plugin.
-
-The plugin logo is placed in `src/main/resources/META-INF/pluginIcon.svg`. See [Plugin Logo][docs:logo] for more
-information and logo requirements.
+The plugin logo is placed in `src/main/resources/META-INF/pluginIcon.svg`. See [Plugin Logo][docs:logo] for more information and logo requirements.
 
 ## Build script
 

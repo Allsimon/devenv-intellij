@@ -1,4 +1,4 @@
-package com.allsimon.intellij.gradledist;
+package com.allsimon.intellij.gradle;
 
 import org.junit.Test;
 
