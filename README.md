@@ -1,39 +1,30 @@
 # Devenv-intellij
 
-[![Twitter Follow](https://img.shields.io/badge/follow-%40JBPlatform-1DA1F2?logo=twitter)](https://twitter.com/JBPlatform)
-[![Developers Forum](https://img.shields.io/badge/JetBrains%20Platform-Join-blue)][jb:forum]
+An IntelliJ Platform plugin adding support for [devenv](https://devenv.sh) in IntelliJ-based IDEs.
+Unofficial and community-maintained; not affiliated with the devenv project.
 
-## Connect repository to GitHub
+> [!NOTE]
+> 🤖 **Vast quantities of this plugin were written by an AI**, under human supervision, in an IDE,
+> about an IDE, inside a reproducible shell that the plugin itself configures. Every line was read
+> by a human before it got in — the robot is prolific, not unsupervised. If you find a bug, it is
+> statistically likely to be the machine's fault and contractually the human's problem.
 
-1. [Create a new repository](https://github.com/new) on GitHub.
-2. Run the following commands to initialize and push this project to the repository created in step 1:
+## Features
 
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/<username>/<repository>.git
-git push -u origin main
-```
+A project is picked up when it has a `devenv.nix` at its root.
 
-3. Configure publishing [secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) in the GitHub
-   repository settings:
+| Feature       | Description                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nix editing   | `.nix` files are backed by the language server started by `devenv lsp`                                                                        |
+| Processes     | The processes declared under `processes` appear in the Services tool window, with start/stop/restart and `devenv up -d` / `devenv down`       |
+| Project SDK   | With `languages.java.enable`, the Project SDK is set to the JDK devenv declares, and put back whenever something else moves it                |
+| Gradle        | With `languages.java.gradle.enable`, linked Gradle builds use the Gradle devenv declares instead of the wrapper's, and run on the Project SDK |
+| Maven         | With `languages.java.maven.enable`, the Maven home path is set to the Maven devenv declares instead of the one bundled with the IDE           |
+| Reformat Code | Delegated to the project's own `treefmt` for the file types it is configured to format, so the IDE and the `treefmt` git hook agree           |
+| `.devenv`     | The state directory is excluded from indexing and search, without modifying the module configuration                                          |
 
-| Secret                 | Description                                                                                                |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `PUBLISH_TOKEN`        | JetBrains Marketplace token — [generate here](https://plugins.jetbrains.com/author/me/tokens)              |
-| `CERTIFICATE_CHAIN`    | Plugin signing certificate chain ([docs](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html)) |
-| `PRIVATE_KEY`          | Plugin signing private key                                                                                 |
-| `PRIVATE_KEY_PASSWORD` | Password for the private key                                                                               |
-
-## Overview
-
-This repository implements an IntelliJ Platform plugin.
-
-## Demo Functionality
-
-The sample plugin adds a `My Tool Window` tool window with a simple functionality of shuffling a random number.
+The Project SDK, Gradle and Maven features need a bundled plugin the IDE may not have; they are
+declared optional, so the rest keeps working in IDEs that don't bundle it.
 
 ## Plugin structure
 
@@ -51,7 +42,7 @@ packages share; each feature package depends on it and on none of the others.
 │   ├── main
 │   │   ├── java/com/allsimon/intellij/
 │   │   │   ├── core/       Locating and invoking the devenv CLI, message bundle, .devenv exclusion
-│   │   │   ├── gradledist/ Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
+│   │   │   ├── gradle/     Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
 │   │   │   ├── jdk/        Project SDK set to the JDK declared under 'languages.java'
 │   │   │   ├── lsp/        Nix language support, backed by 'devenv lsp'
 │   │   │   ├── maven/      Maven home path taken from 'languages.java.maven'
@@ -62,143 +53,45 @@ packages share; each feature package depends on it and on none of the others.
 │   │       └── messages/   Message bundle
 │   └── test
 │       └── java/           Tests, one package per feature
-├── .gitignore              Git ignoring rules
 ├── build.gradle.kts        Build script
+├── devenv.nix              The development environment of the plugin itself
 ├── gradle.properties       Gradle configuration properties
-├── gradlew                 *nix Gradle Wrapper script
-├── gradlew.bat             Windows Gradle Wrapper script
 ├── README.md               This file
-└── settings.gradle.kts     Gradle project settings
+├── settings.gradle.kts     Gradle project settings
+└── TROUBLESHOOTING.md      Diagnosing a feature that doesn't fire, per package
 ```
 
 Only `core` exposes public API — everything else stays package-private inside its own package.
 
 A new feature means a new package under `com.allsimon.intellij`, and its extension registered in [plugin.xml][file:plugin.xml]. A feature that needs a bundled plugin the IDE may not have goes in one of the optional configuration files instead, next to a `bundledPlugin` dependency in [build.gradle.kts][file:build.gradle.kts] and an optional `<depends>` in `plugin.xml`.
 
-The plugin logo is placed in `src/main/resources/META-INF/pluginIcon.svg`. See [Plugin Logo][docs:logo] for more information and logo requirements.
+## Development
 
-## Build script
+The repository is itself a devenv project: `devenv shell` provides the JDK and the Gradle the build
+expects. Building the plugin is then:
 
-The [build.gradle.kts][file:build.gradle.kts] is the core of the project definition. It applies three Gradle plugins:
-
-| Plugin                            | Description                                                                      |
-| --------------------------------- | -------------------------------------------------------------------------------- |
-| `java`                            | Adds Java support                                                                |
-| `org.jetbrains.changelog`         | Simplifies patching the [CHANGELOG.md][file:CHANGELOG.md] file                   |
-| `org.jetbrains.intellij.platform` | The [IntelliJ Platform Gradle Plugin][docs:intellij-platform-gradle-plugin-docs] |
-
-The `intellijPlatform` dependencies block selects the IDE to compile against:
-
-```kotlin
-intellijIdea("2025.3.5")
+```bash
+gradle buildPlugin
 ```
 
-See [Target Versions][docs:target-version] for more information.
+which writes the installable `build/distributions/devenv-intellij-<version>.zip`. `devenv build
+devenv-intellij` produces the same distribution as a Nix output.
 
-The `intellijPlatform` dependencies block also contains a dependency on the platform testing framework:
+The `.run` directory holds the matching Run/Debug configurations.
 
-```kotlin
-testFramework(TestFrameworkType.Platform)
-```
+| Task              | Gradle task                                              |
+| ----------------- | -------------------------------------------------------- |
+| Run IDE in Plugin | [`:runIde`][docs:runIde], with the _Debug_ icon to debug |
+| Run Tests         | [`:check`][gradle:lifecycle-tasks]                       |
+| Run Verifications | [`:verifyPlugin`][docs:verifyPlugin]                     |
 
-See [Testing][docs:testing] for more information
+`runIde` boots a sandbox IDE whose log is at
+`.intellijPlatform/sandbox/devenv-intellij/<IDE-build>/log/idea.log` — the first place to look when
+a feature doesn't fire. See [TROUBLESHOOTING.md][file:TROUBLESHOOTING.md].
 
-## Plugin configuration file
-
-The plugin configuration file is a [plugin.xml][file:plugin.xml] file located in the `src/main/resources/META-INF`
-directory. It provides general information about the plugin, its dependencies, extensions, and listeners.
-
-You can read more about this file in the [Plugin Configuration File][docs:plugin.xml] section of our documentation.
-
-### Plugin ID and name
-
-Generated plugin ID and name may require adjustment.
-
-These values are generated based on _Group ID_ and _Artifact ID_ provided in the IDE Plugin wizard. It is recommended to
-review `<id>` and `<name>` elements in the plugin.xml file, and adjust them if needed.
-
-Please note that Gradle properties `rootProject.name` and `project.group` don't need to match the `<id>` and `<name>`
-elements. There is no IntelliJ Platform-related reason they should as they serve different functions.
-
-## Predefined Run/Debug configurations
-
-Within the default project structure, there is a `.run` directory provided containing predefined _Run/Debug
-configurations_ that expose corresponding Gradle tasks:
-
-| Configuration name  | Description                                                                                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Run IDE with Plugin | Runs [`:runIde`][docs:intellij-platform-gradle-plugin-runIde] IntelliJ Platform Gradle Plugin task. Use the _Debug_ icon for plugin debugging.                                        |
-| Run Tests           | Runs [`:check`][gradle:lifecycle-tasks] Gradle task.                                                                                                                                  |
-| Run Verifications   | Runs [`:verifyPlugin`][docs:intellij-platform-gradle-plugin-verifyPlugin] IntelliJ Platform Gradle Plugin task to check the plugin compatibility against the specified IntelliJ IDEs. |
-
-> [!NOTE]
-> You can find the logs from the running task in the `idea.log` tab.
-
-## Publishing the plugin
-
-> [!TIP]
-> Make sure to follow all guidelines listed in [Publishing a Plugin][docs:publishing] to follow all recommended and
-> required steps.
-
-Releasing a plugin to [JetBrains Marketplace](https://plugins.jetbrains.com) is a straightforward operation that uses
-the `publishPlugin` Gradle task provided by
-the [intellij-platform-gradle-plugin][docs:intellij-platform-gradle-plugin-docs].
-
-You can also upload the plugin to the [JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/upload)
-manually via UI.
-
-## GitHub Integration
-
-### GitHub Actions
-
-The project includes [GitHub Actions][https://docs.github.com/en/actions] workflows for automated CI/CD:
-
-| Workflow                                 | Trigger        | Description                                                     |
-| ---------------------------------------- | -------------- | --------------------------------------------------------------- |
-| [Build](.github/workflows/build.yml)     | Push / PR      | Builds, tests, and verifies the plugin; creates a draft release |
-| [Release](.github/workflows/release.yml) | GitHub Release | Publishes the plugin to JetBrains Marketplace                   |
-
-### GitHub issue templates
-
-The project includes GitHub issue templates:
-
-- [Bug Report](.github/ISSUE_TEMPLATE/bug-report.yml)
-- [Feature Request](.github/ISSUE_TEMPLATE/feature-request.yml)
-
-See [Syntax for issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).
-
-### Dependabot
-
-[Dependabot configuration](.github/dependabot.yml) file enables tracking outdated or vulnerable dependencies.
-
-## Useful links
-
-- [IntelliJ Platform SDK Plugin SDK][docs]
-- [IntelliJ Platform Gradle Plugin Documentation][docs:intellij-platform-gradle-plugin-docs]
-- [IntelliJ Platform Explorer][jb:ipe]
-- [JetBrains Marketplace Quality Guidelines][jb:quality-guidelines]
-- [IntelliJ Platform UI Guidelines][jb:ui-guidelines]
-- [JetBrains Marketplace Paid Plugins][jb:paid-plugins]
-- [IntelliJ SDK Code Samples][gh:code-samples]
-
-[docs]: https://plugins.jetbrains.com/docs/intellij
-[docs:plugin.xml]: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html?from=IJPluginReadmeFile
-[docs:publishing]: https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginReadmeFile
-[docs:intellij-platform-gradle-plugin-docs]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html?from=IJPluginReadmeFile
-[docs:intellij-platform-gradle-plugin-runIde]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#runIde
-[docs:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#verifyPlugin
-[docs:logo]: https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html?from=IJPluginReadmeFile
-[docs:target-version]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#target-versions
-[docs:testing]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#testing
+[docs:runIde]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#runIde
+[docs:verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#verifyPlugin
 [file:build.gradle.kts]: ./build.gradle.kts
-[file:CHANGELOG.md]: ./CHANGELOG.md
-[file:gradle.properties]: ./gradle.properties
 [file:plugin.xml]: ./src/main/resources/META-INF/plugin.xml
-[gh:code-samples]: https://github.com/JetBrains/intellij-sdk-code-samples
+[file:TROUBLESHOOTING.md]: ./TROUBLESHOOTING.md
 [gradle:lifecycle-tasks]: https://docs.gradle.org/current/userguide/java_plugin.html#lifecycle_tasks
-[jb:github]: https://github.com/JetBrains/.github/blob/main/profile/README.md
-[jb:forum]: https://platform.jetbrains.com/
-[jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
-[jb:paid-plugins]: https://plugins.jetbrains.com/docs/marketplace/paid-plugins-marketplace.html
-[jb:ipe]: https://jb.gg/ipe
-[jb:ui-guidelines]: https://jetbrains.github.io/ui
