@@ -1,6 +1,6 @@
 <!-- Loaded only in IDEs that bundle the Gradle plugin; see the optional <depends> in plugin.xml. -->
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.allsimon.intellij.gradledist.DevenvGradleDistributionActivity"/>
+        <postStartupActivity implementation="com.allsimon.intellij.gradle.DevenvGradleDistributionActivity"/>
     </extensions>
 </idea-plugin>

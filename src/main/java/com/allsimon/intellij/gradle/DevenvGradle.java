@@ -1,4 +1,4 @@
-package com.allsimon.intellij.gradledist;
+package com.allsimon.intellij.gradle;
 
 import com.allsimon.intellij.core.DevenvCli;
 import com.google.gson.JsonElement;
