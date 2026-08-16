@@ -21,20 +21,16 @@ dependencies {
         intellijIdea(libs.versions.intellijPlatform.get())
         testFramework(TestFrameworkType.Platform)
 
-        // 'pluginComposedModule', not 'pluginModule': the former merges a module into the single
-        // plugin jar, so the one plugin.xml below can name classes from any module. 'pluginModule'
-        // would instead declare a v2 content module, shipped as its own lib/modules/*.jar and only
-        // loaded if plugin.xml declares it in a <content> block - without that the IDE silently
-        // loads none of these classes and every extension goes missing.
+        // The bundled plugins the optional features compile against. Each one is only an optional
+        // <depends> in plugin.xml, so an IDE that doesn't bundle it leaves the matching
+        // configuration file - and the classes it names - unloaded, and the rest of the plugin
+        // keeps working.
         //
-        // Every feature module has to be listed here; a module missing from this list compiles fine
-        // and then fails at runtime with a missing extension implementation.
-        pluginComposedModule(implementation(project(":core")))
-        pluginComposedModule(implementation(project(":gradledist")))
-        pluginComposedModule(implementation(project(":jdk")))
-        pluginComposedModule(implementation(project(":lsp")))
-        pluginComposedModule(implementation(project(":maven")))
-        pluginComposedModule(implementation(project(":processes")))
-        pluginComposedModule(implementation(project(":treefmt")))
+        // JavaSdk and the SDK table (com.allsimon.intellij.jdk).
+        bundledPlugin("com.intellij.java")
+        // GradleProjectSettings (com.allsimon.intellij.gradledist).
+        bundledPlugin("com.intellij.gradle")
+        // MavenGeneralSettings (com.allsimon.intellij.maven).
+        bundledPlugin("org.jetbrains.idea.maven")
     }
 }
