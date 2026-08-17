@@ -13,18 +13,19 @@ Unofficial and community-maintained; not affiliated with the devenv project.
 
 A project is picked up when it has a `devenv.nix` at its root.
 
-| Feature       | Description                                                                                                                                   |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nix editing   | `.nix` files are backed by the language server started by `devenv lsp`                                                                        |
-| Processes     | The processes declared under `processes` appear in the Services tool window, with start/stop/restart and `devenv up -d` / `devenv down`       |
-| Project SDK   | With `languages.java.enable`, the Project SDK is set to the JDK devenv declares, and put back whenever something else moves it                |
-| Gradle        | With `languages.java.gradle.enable`, linked Gradle builds use the Gradle devenv declares instead of the wrapper's, and run on the Project SDK |
-| Maven         | With `languages.java.maven.enable`, the Maven home path is set to the Maven devenv declares instead of the one bundled with the IDE           |
-| Reformat Code | Delegated to the project's own `treefmt` for the file types it is configured to format, so the IDE and the `treefmt` git hook agree           |
-| `.devenv`     | The state directory is excluded from indexing and search, without modifying the module configuration                                          |
+| Feature       | Description                                                                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nix editing   | `.nix` files are backed by the language server started by `devenv lsp`                                                                                                                        |
+| Processes     | The processes declared under `processes` appear in the Services tool window, with start/stop/restart and `devenv up -d` / `devenv down`                                                       |
+| Project SDK   | With `languages.java.enable`, the Project SDK is set to the JDK devenv declares, and put back whenever something else moves it                                                                |
+| Gradle        | With `languages.java.gradle.enable`, linked Gradle builds use the Gradle devenv declares instead of the wrapper's, and run on the Project SDK                                                 |
+| Maven         | With `languages.java.maven.enable`, the Maven home path is set to the Maven devenv declares instead of the one bundled with the IDE                                                           |
+| Node.js       | With `languages.javascript.enable`, the Node.js interpreter is set to the one devenv declares instead of one found on the machine, along with the `pnpm`, `yarn` or `npm` declared next to it |
+| Reformat Code | Delegated to the project's own `treefmt` for the file types it is configured to format, so the IDE and the `treefmt` git hook agree                                                           |
+| `.devenv`     | The state directory is excluded from indexing and search, without modifying the module configuration                                                                                          |
 
-The Project SDK, Gradle and Maven features need a bundled plugin the IDE may not have; they are
-declared optional, so the rest keeps working in IDEs that don't bundle it.
+The Project SDK, Gradle, Maven and Node.js features need a bundled plugin the IDE may not have; they
+are declared optional, so the rest keeps working in IDEs that don't bundle it.
 
 ## Plugin structure
 
@@ -43,6 +44,7 @@ packages share; each feature package depends on it and on none of the others.
 │   │   ├── java/com/allsimon/intellij/
 │   │   │   ├── core/       Locating and invoking the devenv CLI, message bundle, .devenv exclusion
 │   │   │   ├── gradle/     Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
+│   │   │   ├── javascript/ Node.js interpreter and package manager taken from 'languages.javascript'
 │   │   │   ├── jdk/        Project SDK set to the JDK declared under 'languages.java'
 │   │   │   ├── lsp/        Nix language support, backed by 'devenv lsp'
 │   │   │   ├── maven/      Maven home path taken from 'languages.java.maven'

@@ -32,5 +32,7 @@ dependencies {
         bundledPlugin("com.intellij.gradle")
         // MavenGeneralSettings (com.allsimon.intellij.maven).
         bundledPlugin("org.jetbrains.idea.maven")
+        // NodeJsInterpreterManager (com.allsimon.intellij.javascript).
+        bundledPlugin("JavaScript")
     }
 }
