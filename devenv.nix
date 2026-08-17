@@ -4,6 +4,7 @@
     enable = true;
     gradle.enable = true;
     gradle.package = pkgs.gradle_9;
+    maven.enable = true;
     lsp.enable = false;
   };
   services.nginx.enable = true;
