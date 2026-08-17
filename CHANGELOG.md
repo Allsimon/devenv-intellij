@@ -23,5 +23,10 @@
 - A project whose `devenv.nix` sets `languages.java.maven.enable` now has its Maven home path set to the
   Maven `devenv.nix` declares, instead of the one bundled with the IDE. It applies from the next Maven
   reload on. Only IDEs bundling the Maven plugin are concerned.
+- A project whose `devenv.nix` sets `languages.javascript.enable` now has its Node.js interpreter set to the
+  one `devenv.nix` declares, instead of whichever Node.js the IDE finds on the machine, and its package
+  manager set to the `pnpm`, `yarn` or `npm` declared next to it - the first of those the project
+  enables, since the IDE has a single such setting. Both apply at once, to run configurations and to the
+  JavaScript tooling alike. Only IDEs bundling the JavaScript plugin are concerned.
 - Reformat Code now runs the project's own `treefmt` for the file types it is configured to format, so the
   IDE and the `treefmt` git hook agree. Other file types keep using the IDE's built-in formatters.
