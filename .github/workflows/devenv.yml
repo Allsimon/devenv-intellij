@@ -8,6 +8,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Restrict the default GITHUB_TOKEN to read-only
+permissions:
+  contents: read
+
 jobs:
   # Test the developer environment and build the plugin through Nix
   devenv:
