@@ -34,5 +34,7 @@ dependencies {
         bundledPlugin("org.jetbrains.idea.maven")
         // NodeJsInterpreterManager (com.allsimon.intellij.javascript).
         bundledPlugin("JavaScript")
+        // The JSON schema machinery (com.allsimon.intellij.schema).
+        bundledPlugin("com.intellij.modules.json")
     }
 }

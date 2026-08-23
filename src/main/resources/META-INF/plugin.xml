@@ -32,6 +32,10 @@
     <depends optional="true" config-file="devenv-maven.xml">org.jetbrains.idea.maven</depends>
     <!-- And the Node.js interpreter support, the JavaScript plugin. -->
     <depends optional="true" config-file="devenv-javascript.xml">JavaScript</depends>
+    <!-- And the devenv.yaml schema, the JSON plugin, which owns the schema machinery. The YAML plugin
+         is what applies a mapped schema to a .yaml file; where it is missing, devenv.yaml simply keeps
+         no schema. -->
+    <depends optional="true" config-file="devenv-schema.xml">com.intellij.modules.json</depends>
 
     <resource-bundle>messages.MyMessageBundle</resource-bundle>
 
