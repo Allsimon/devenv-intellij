@@ -40,7 +40,7 @@ jobs:
       # Use the public devenv binary cache
       # Add 'authToken' and your own cache name here to also push build results
       - name: Setup Cachix
-        uses: cachix/cachix-action@v16
+        uses: cachix/cachix-action@v17
         with:
           name: devenv
 
