@@ -10,7 +10,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "devenv-intellij";
-  version = "1.0.0-SNAPSHOT";
+  # Keep the version in a single place: Gradle names the distribution after it.
+  version = lib.pipe ./gradle.properties [
+    builtins.readFile
+    (lib.splitString "\n")
+    (lib.findFirst (lib.hasPrefix "version=") (throw "no version= in gradle.properties"))
+    (lib.removePrefix "version=")
+  ];
 
   src = lib.fileset.toSource {
     root = ./.;
