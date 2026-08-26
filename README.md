@@ -17,21 +17,22 @@ with a screenshot captured from a real IDE; the table below and those pages are 
 
 <!-- FEATURES:BEGIN -->
 
-| Feature                          | Description                                                                                      |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Nix editing](docs/lsp.md)       | `.nix` files are backed by the language server started by `devenv lsp`                           |
-| [Processes](docs/processes.md)   | The processes declared under `processes` appear in the Services tool window                      |
-| [Project SDK](docs/jdk.md)       | The Project SDK is set to the JDK devenv declares, and put back when something moves it          |
-| [Gradle](docs/gradle.md)         | Linked Gradle builds use the Gradle devenv declares instead of the wrapper's, on the Project SDK |
-| [Maven](docs/maven.md)           | The Maven home path is set to the Maven devenv declares instead of the one bundled with the IDE  |
-| [Node.js](docs/javascript.md)    | The Node.js interpreter and package manager are set to the ones devenv declares                  |
-| [Reformat Code](docs/treefmt.md) | Delegated to the project's own `treefmt` for the file types it is configured to format           |
-| [`.devenv`](docs/exclusion.md)   | The state directory is excluded from indexing and search                                         |
+| Feature                                 | Description                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [Nix editing](docs/lsp.md)              | `.nix` files are backed by the language server started by `devenv lsp`                           |
+| [`devenv.yaml` editing](docs/schema.md) | `devenv.yaml` is mapped to the JSON schema devenv publishes, without the `$schema` modeline      |
+| [Processes](docs/processes.md)          | The processes declared under `processes` appear in the Services tool window                      |
+| [Project SDK](docs/jdk.md)              | The Project SDK is set to the JDK devenv declares, and put back when something moves it          |
+| [Gradle](docs/gradle.md)                | Linked Gradle builds use the Gradle devenv declares instead of the wrapper's, on the Project SDK |
+| [Maven](docs/maven.md)                  | The Maven home path is set to the Maven devenv declares instead of the one bundled with the IDE  |
+| [Node.js](docs/javascript.md)           | The Node.js interpreter and package manager are set to the ones devenv declares                  |
+| [Reformat Code](docs/treefmt.md)        | Delegated to the project's own `treefmt` for the file types it is configured to format           |
+| [`.devenv`](docs/exclusion.md)          | The state directory is excluded from indexing and search                                         |
 
 <!-- FEATURES:END -->
 
-The Project SDK, Gradle, Maven and Node.js features need a bundled plugin the IDE may not have; they
-are declared optional, so the rest keeps working in IDEs that don't bundle it.
+The Project SDK, Gradle, Maven, Node.js and `devenv.yaml` features need a bundled plugin the IDE may
+not have; they are declared optional, so the rest keeps working in IDEs that don't bundle it.
 
 ## Plugin structure
 
@@ -55,6 +56,7 @@ packages share; each feature package depends on it and on none of the others.
 │   │   │   ├── lsp/        Nix language support, backed by 'devenv lsp'
 │   │   │   ├── maven/      Maven home path taken from 'languages.java.maven'
 │   │   │   ├── processes/  devenv processes in the Services tool window
+│   │   │   ├── schema/     devenv.yaml mapped to the JSON schema devenv publishes
 │   │   │   └── treefmt/    Reformat Code delegated to the project's treefmt
 │   │   └── resources/
 │   │       ├── META-INF/   plugin.xml, the optional configuration files and pluginIcon.svg

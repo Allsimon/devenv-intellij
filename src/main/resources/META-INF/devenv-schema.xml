@@ -1,0 +1,8 @@
+<!-- Loaded only in IDEs that bundle the JSON plugin; see the optional <depends> in plugin.xml. The
+     extension point kept its historical 'JavaScript' namespace when JSON schema support moved out of
+     the JavaScript plugin. -->
+<idea-plugin>
+    <extensions defaultExtensionNs="JavaScript">
+        <JsonSchema.ProviderFactory implementation="com.allsimon.intellij.schema.DevenvSchemaProviderFactory"/>
+    </extensions>
+</idea-plugin>
