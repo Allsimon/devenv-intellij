@@ -15,24 +15,24 @@ import java.util.List;
  * The platform hides a contributor whose service list is empty, which is exactly what should happen
  * for projects that aren't devenv projects at all.
  */
-public final class DevenvServiceViewContributor implements ServiceViewContributor<DevenvProcess> {
+public final class DevenvServiceViewContributor implements ServiceViewContributor<String> {
 
     @Override
     public @NotNull ServiceViewDescriptor getViewDescriptor(@NotNull Project project) {
-        return new DevenvRootServiceViewDescriptor(DevenvProcessManager.getInstance(project));
+        return DevenvProcessManager.getInstance(project).rootDescriptor();
     }
 
     @Override
-    public @NotNull List<DevenvProcess> getServices(@NotNull Project project) {
+    public @NotNull List<String> getServices(@NotNull Project project) {
         if (DevenvCli.findDevenvRoot(project) == null) {
             return List.of();
         }
-        return DevenvProcessManager.getInstance(project).getSnapshot();
+        return DevenvProcessManager.getInstance(project).getProcessNames();
     }
 
     @Override
     public @NotNull ServiceViewDescriptor getServiceDescriptor(@NotNull Project project,
-                                                               @NotNull DevenvProcess process) {
-        return DevenvProcessManager.getInstance(project).descriptorFor(process);
+                                                               @NotNull String processName) {
+        return DevenvProcessManager.getInstance(project).descriptorFor(processName);
     }
 }

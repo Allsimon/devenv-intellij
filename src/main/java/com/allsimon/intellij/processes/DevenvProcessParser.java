@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,6 +24,7 @@ import java.util.Map;
  */
 final class DevenvProcessParser {
     private static final String PROCESSES_KEY = "processes";
+    private static final String RUNTIME_KEY = "devenv.runtime";
     private static final String EXEC_KEY = "exec";
     private static final String RESTARTS_SEPARATOR = "restarts:";
     private static final String NO_PROCESSES = "No processes found.";
@@ -51,6 +53,24 @@ final class DevenvProcessParser {
             declared.add(DevenvProcess.declared(entry.getKey(), exec(entry.getValue())));
         }
         return declared;
+    }
+
+    /**
+     * Reads the {@code devenv.runtime} attribute, i.e. the directory the process manager keeps its
+     * socket and its logs in.
+     * <p>
+     * The plugin used to reach that directory through the {@code .devenv/run} symlink, which devenv
+     * writes but does not keep up to date: it was seen pointing at the runtime directory of a manager
+     * that had been gone for an hour, while the live one wrote elsewhere. Asking for the attribute in
+     * the same environment as every other devenv call this plugin makes is what keeps the two agreeing.
+     */
+    static @Nullable String parseRuntimeDirectory(@NotNull String evalOutput) {
+        JsonElement root = JsonParser.parseString(DevenvCli.stripAnsi(evalOutput));
+        if (!root.isJsonObject()) {
+            return null;
+        }
+        JsonElement runtime = root.getAsJsonObject().get(RUNTIME_KEY);
+        return runtime != null && runtime.isJsonPrimitive() ? runtime.getAsString() : null;
     }
 
     private static String exec(@NotNull JsonElement process) {
