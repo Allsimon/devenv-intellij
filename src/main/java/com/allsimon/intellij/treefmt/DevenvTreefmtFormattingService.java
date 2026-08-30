@@ -58,7 +58,7 @@ public final class DevenvTreefmtFormattingService extends AsyncDocumentFormattin
         if (virtualFile == null || !virtualFile.isInLocalFileSystem()) {
             return false;
         }
-        DevenvTreefmt treefmt = DevenvTreefmt.resolve(file.getProject());
+        DevenvTreefmt treefmt = DevenvTreefmt.resolve(file.getProject(), virtualFile);
         return treefmt != null && treefmt.canFormat(Path.of(virtualFile.getPath()));
     }
 
@@ -68,7 +68,7 @@ public final class DevenvTreefmtFormattingService extends AsyncDocumentFormattin
         if (virtualFile == null) {
             return null;
         }
-        DevenvTreefmt treefmt = DevenvTreefmt.resolve(request.getContext().getProject());
+        DevenvTreefmt treefmt = DevenvTreefmt.resolve(request.getContext().getProject(), virtualFile);
         if (treefmt == null) {
             return null;
         }

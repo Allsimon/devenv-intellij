@@ -15,6 +15,8 @@ The output is read from the files the process manager writes under `processes/lo
 
 Those files are an internal layout of the `native` process manager, so a project setting `process.manager.implementation` to anything else falls back to the snapshot, refreshed on selection and on demand.
 
+A project can hold several `devenv.nix` - modules attached side by side, or a repository whose modules each carry one - and every one of them is searched for, in the project's base directories and in the content roots of its modules. devenv runs one process manager per environment, so each root polls, starts and stops on its own, and its processes are listed under a node named after the directory the `devenv.nix` is in. A project with a single `devenv.nix` gets no such node, and the commands on the `Devenv` node are run in every root.
+
 A devenv project that declares no process shows no node at all: the platform hides a contributor whose list is empty.
 
 ![Processes](img/processes.jpg)

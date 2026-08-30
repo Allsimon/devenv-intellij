@@ -9,15 +9,11 @@ import com.intellij.execution.services.ServiceEventListener;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.openapi.vfs.newvfs.BulkFileListener;
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,15 +30,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Everything the Services tool window knows about a project's devenv processes: which ones
+ * Everything the Services tool window knows about the devenv processes of one root: which ones its
  * devenv.nix declares, what the running process manager reports about them, and the commands that
  * change that.
+ * <p>
+ * One instance per devenv.nix of the project - {@link DevenvProcessRoots} owns them - because devenv
+ * runs one process manager per environment and every command has to be run where that devenv.nix
+ * lives.
  * <p>
  * State lives here rather than in {@link DevenvServiceViewContributor} because the contributor is
  * application-wide and its {@code getServices} runs on the UI path - it may only ever read
  * {@link #getProcessNames()}, never spawn a process.
  */
-@Service(Service.Level.PROJECT)
 final class DevenvProcessManager implements Disposable {
     private static final Logger LOG = Logger.getInstance(DevenvProcessManager.class);
 
@@ -55,6 +54,7 @@ final class DevenvProcessManager implements Disposable {
     private static final String RUNTIME_ATTRIBUTE = "devenv.runtime";
 
     private final Project project;
+    private final VirtualFile root;
     private final Map<String, DevenvProcessServiceViewDescriptor> descriptors = new ConcurrentHashMap<>();
     private final AtomicBoolean refreshInFlight = new AtomicBoolean();
     private final AtomicBoolean pollingStarted = new AtomicBoolean();
@@ -67,12 +67,9 @@ final class DevenvProcessManager implements Disposable {
     private volatile List<DevenvProcess> declared;
     private volatile ScheduledFuture<?> poller;
 
-    DevenvProcessManager(@NotNull Project project) {
+    DevenvProcessManager(@NotNull Project project, @NotNull VirtualFile root) {
         this.project = project;
-    }
-
-    static @NotNull DevenvProcessManager getInstance(@NotNull Project project) {
-        return project.getService(DevenvProcessManager.class);
+        this.root = root;
     }
 
     /**
@@ -92,10 +89,19 @@ final class DevenvProcessManager implements Disposable {
         return project;
     }
 
-    /** One per project, because the platform asks for it again on every model rebuild. */
+    /** The directory holding the devenv.nix this manager runs devenv in. */
+    @NotNull VirtualFile getRoot() {
+        return root;
+    }
+
+    /**
+     * The node standing for this root in a project that has several, and the parent the tool window
+     * shows its processes under. One per root, because the platform asks for it again on every model
+     * rebuild.
+     */
     synchronized @NotNull DevenvRootServiceViewDescriptor rootDescriptor() {
         if (rootDescriptor == null) {
-            rootDescriptor = new DevenvRootServiceViewDescriptor(this);
+            rootDescriptor = DevenvRootServiceViewDescriptor.of(this);
         }
         return rootDescriptor;
     }
@@ -109,30 +115,15 @@ final class DevenvProcessManager implements Disposable {
     }
 
     /**
-     * Polling only starts once something actually asks for the services of a devenv project, so
-     * non-devenv projects never spawn anything.
+     * Polling only starts once something actually asks for the processes of this root, so a project
+     * whose Services tool window is never opened spawns nothing.
      */
     private void startPolling() {
-        if (project.isDisposed() || DevenvCli.findDevenvRoot(project) == null) {
+        if (project.isDisposed() || !pollingStarted.compareAndSet(false, true)) {
             return;
         }
-        if (!pollingStarted.compareAndSet(false, true)) {
-            return;
-        }
-
-        project.getMessageBus().connect(this).subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
-            @Override
-            public void after(@NotNull List<? extends VFileEvent> events) {
-                for (VFileEvent event : events) {
-                    VirtualFile file = event.getFile();
-                    if (file != null && DevenvCli.isConfigurationFile(file)) {
-                        reload();
-                        return;
-                    }
-                }
-            }
-        });
-
+        // What invalidates the declarations - devenv.nix and devenv.lock - is watched once for the
+        // whole project by DevenvProcessRoots, which knows which root a changed file belongs to.
         poller = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(
                 this::poll, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
     }
@@ -173,11 +164,17 @@ final class DevenvProcessManager implements Disposable {
         }
     }
 
-    /** Drops the cached devenv.nix declarations, then refreshes. */
+    /**
+     * Drops the cached devenv.nix declarations, then refreshes - unless nothing has ever asked this
+     * root for its processes, in which case there is nothing cached and nothing to show, and
+     * evaluating would spawn devenv behind a tool window the user never opened.
+     */
     void reload() {
         declared = null;
         runtimeDirectory = null;
-        refreshAsync();
+        if (pollingStarted.get()) {
+            refreshAsync();
+        }
     }
 
     private void refreshAndRelease() {
@@ -191,19 +188,18 @@ final class DevenvProcessManager implements Disposable {
     }
 
     private void refresh() {
-        VirtualFile root = DevenvCli.findDevenvRoot(project);
         File executable = DevenvCli.findExecutable();
-        if (root == null || executable == null) {
+        if (!root.isValid() || executable == null) {
             publish(List.of());
             return;
         }
 
         List<DevenvProcess> declaredProcesses = declared;
         if (declaredProcesses == null) {
-            declaredProcesses = evaluateDeclared(executable, root);
+            declaredProcesses = evaluateDeclared(executable);
             declared = declaredProcesses;
         }
-        publish(merge(declaredProcesses, listReported(executable, root)));
+        publish(merge(declaredProcesses, listReported(executable)));
     }
 
     /**
@@ -228,9 +224,8 @@ final class DevenvProcessManager implements Disposable {
      * runtime state - {@code devenv eval} takes several attributes at once, and evaluating the
      * configuration twice would cost minutes against a cold cache.
      */
-    private @NotNull List<DevenvProcess> evaluateDeclared(@NotNull File executable, @NotNull VirtualFile root) {
-        ProcessOutput output = execute(
-                DevenvCli.commandLine(executable, root.getPath(), "eval", "processes", RUNTIME_ATTRIBUTE), 0);
+    private @NotNull List<DevenvProcess> evaluateDeclared(@NotNull File executable) {
+        ProcessOutput output = execute(commandLine(executable, "eval", "processes", RUNTIME_ATTRIBUTE), 0);
         if (output == null) {
             return List.of();
         }
@@ -248,9 +243,8 @@ final class DevenvProcessManager implements Disposable {
         }
     }
 
-    private @NotNull Map<String, DevenvProcess> listReported(@NotNull File executable, @NotNull VirtualFile root) {
-        ProcessOutput output =
-                execute(DevenvCli.commandLine(executable, root.getPath(), "processes", "list"), LIST_TIMEOUT_MILLIS);
+    private @NotNull Map<String, DevenvProcess> listReported(@NotNull File executable) {
+        ProcessOutput output = execute(commandLine(executable, "processes", "list"), LIST_TIMEOUT_MILLIS);
         // A non-zero exit is the normal way devenv says "no process manager is running", so it is not
         // worth a warning - it just means every declared process is still in its NOT_STARTED state.
         if (output == null || output.getExitCode() != 0) {
@@ -271,14 +265,13 @@ final class DevenvProcessManager implements Disposable {
 
     /** Reads the tail of a process's log; returns {@code null} when devenv could not be run at all. */
     @Nullable String readLogs(@NotNull String processName, int lines) {
-        VirtualFile root = DevenvCli.findDevenvRoot(project);
         File executable = DevenvCli.findExecutable();
-        if (root == null || executable == null) {
+        if (!root.isValid() || executable == null) {
             return null;
         }
 
-        GeneralCommandLine commandLine = DevenvCli.commandLine(
-                executable, root.getPath(), "processes", "logs", processName, "-n", String.valueOf(lines));
+        GeneralCommandLine commandLine =
+                commandLine(executable, "processes", "logs", processName, "-n", String.valueOf(lines));
         ProcessOutput output = execute(commandLine, LOGS_TIMEOUT_MILLIS);
         if (output == null) {
             return null;
@@ -292,16 +285,15 @@ final class DevenvProcessManager implements Disposable {
      * failures as a balloon rather than swallowing them.
      */
     void runCommand(@NotNull String title, String @NotNull ... arguments) {
-        VirtualFile root = DevenvCli.findDevenvRoot(project);
         File executable = DevenvCli.findExecutable();
         if (executable == null) {
             notifyFailure(title, MyMessageBundle.message("lsp.devenv.executableNotFound", DevenvCli.EXECUTABLE));
             return;
         }
-        if (root == null) {
-            // Only reachable if the project stopped being a devenv project between the node appearing
-            // and the click, but a command that quietly does nothing is indistinguishable from a broken
-            // one - so say so rather than returning.
+        if (!root.isValid()) {
+            // Only reachable if the devenv.nix went away between the node appearing and the click, but a
+            // command that quietly does nothing is indistinguishable from a broken one - so say so rather
+            // than returning.
             notifyFailure(title, MyMessageBundle.message("services.devenv.rootNotFound"));
             return;
         }
@@ -311,7 +303,7 @@ final class DevenvProcessManager implements Disposable {
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
                 // No timeout: 'devenv up' may have to build the whole environment first.
-                ProcessOutput output = execute(DevenvCli.commandLine(executable, root.getPath(), arguments), 0);
+                ProcessOutput output = execute(commandLine(executable, arguments), 0);
                 if (output == null) {
                     // execute() has already logged why; without this the command looks like a no-op.
                     notifyFailure(title, MyMessageBundle.message("services.devenv.commandFailed",
@@ -322,6 +314,10 @@ final class DevenvProcessManager implements Disposable {
                 refreshAsync();
             }
         }.queue();
+    }
+
+    private @NotNull GeneralCommandLine commandLine(@NotNull File executable, String @NotNull ... arguments) {
+        return DevenvCli.commandLine(executable, root.getPath(), arguments);
     }
 
     private @Nullable ProcessOutput execute(@NotNull GeneralCommandLine commandLine, int timeoutMillis) {
@@ -354,19 +350,21 @@ final class DevenvProcessManager implements Disposable {
             descriptorFor(process.name()).setProcess(process);
         }
 
-        ServiceEventListener publisher = project.getMessageBus().syncPublisher(ServiceEventListener.TOPIC);
         if (!names(previous).equals(names(processes))) {
-            publisher.handle(ServiceEventListener.ServiceEvent.createResetEvent(DevenvServiceViewContributor.class));
+            DevenvServiceViewContributor.notifyServicesChanged(project);
             return;
         }
         // Same processes, different states: update those nodes in place. A reset would rebuild the tree
         // and drop the selection, which is exactly what the user is looking at when they press Start.
+        ServiceEventListener publisher = project.getMessageBus().syncPublisher(ServiceEventListener.TOPIC);
         Map<String, DevenvProcess> before = byName(previous);
         for (DevenvProcess process : processes) {
             if (!process.equals(before.get(process.name()))) {
                 publisher.handle(ServiceEventListener.ServiceEvent.createEvent(
                         ServiceEventListener.EventType.SERVICE_CHANGED,
-                        process.name(),
+                        // The value the contributor handed the tree for this process, or it will find no
+                        // node to update.
+                        new DevenvProcessNode(this, process.name()),
                         DevenvServiceViewContributor.class));
             }
         }
