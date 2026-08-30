@@ -12,7 +12,10 @@
   validation without the `# yaml-language-server: $schema=...` modeline. The IDE downloads the schema once
   and caches it; only IDEs bundling the JSON plugin are concerned, and the YAML plugin is what applies it.
 - The processes declared under `processes` in `devenv.nix` now appear in the Services tool window, with their
-  status, per-process start/stop/restart, a log snapshot, and `devenv up -d` / `devenv down` on the root node.
+  status, per-process start/stop/restart, live logs, and `devenv up -d` / `devenv down` on the root node.
+  Selecting a process follows the log files the `native` process manager writes, so its output arrives as it
+  is produced, with stderr and ANSI colours kept and a filter above the console; any other
+  `process.manager.implementation` falls back to the `devenv processes logs` snapshot.
 - The `.devenv` state directory is now excluded from indexing and search, without modifying the module
   configuration.
 - The Project SDK of a project whose `devenv.nix` sets `languages.java.enable` is now set to the JDK that

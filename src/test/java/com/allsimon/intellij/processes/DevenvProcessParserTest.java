@@ -101,4 +101,28 @@ public class DevenvProcessParserTest {
         assertTrue(DevenvProcessParser.parseList("No processes found.\n").isEmpty());
         assertTrue(DevenvProcessParser.parseList("").isEmpty());
     }
+
+    @Test
+    public void parseRuntimeDirectoryReadsTheAttributeAskedForAlongsideTheProcesses() {
+        String output = """
+                {
+                  "processes": {
+                    "ticker": {
+                      "exec": "while true; do date; sleep 1; done"
+                    }
+                  },
+                  "devenv.runtime": "/run/user/1000/devenv-0a1b2c3"
+                }
+                """;
+
+        assertEquals("/run/user/1000/devenv-0a1b2c3", DevenvProcessParser.parseRuntimeDirectory(output));
+        assertEquals("the two attributes come back in one document and must both be readable from it",
+                1, DevenvProcessParser.parseDeclared(output).size());
+    }
+
+    @Test
+    public void parseRuntimeDirectoryReturnsNothingWhenDevenvStopsReportingIt() {
+        assertNull(DevenvProcessParser.parseRuntimeDirectory("{\"processes\": {}}"));
+        assertNull(DevenvProcessParser.parseRuntimeDirectory("[]"));
+    }
 }
