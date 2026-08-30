@@ -38,3 +38,21 @@ dependencies {
         bundledPlugin("com.intellij.modules.json")
     }
 }
+
+// What it takes to get a build to JetBrains Marketplace. The Release workflow, which runs when a
+// GitHub release is published, exports all four from the repository secrets; a local 'publishPlugin'
+// needs them in the environment just the same. Note that publishPlugin only ever updates a listing
+// that already exists - the first version of a plugin has to be uploaded by hand.
+intellijPlatform {
+    // Signing is optional as far as the Marketplace is concerned, but an unsigned plugin is one the
+    // IDE cannot tell apart from a tampered-with copy of it.
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+}
