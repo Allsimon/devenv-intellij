@@ -10,8 +10,9 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor;
+import com.intellij.platform.lsp.api.LspServerDescriptor;
 import org.eclipse.lsp4j.ConfigurationItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,9 +21,13 @@ import java.io.File;
 
 /**
  * Describes the language server started by {@code devenv lsp}: a nixd instance preconfigured with the
- * devenv module options and the nixpkgs pinned by the project's devenv.lock.
+ * devenv module options and the nixpkgs pinned by the devenv.lock of one root.
+ * <p>
+ * Rooted at that directory rather than at the project: the platform identifies a server by its
+ * descriptor's class, name and roots, so a project holding several devenv.nix gets one server each,
+ * and every one of them answers only for the files of its own root.
  */
-final class DevenvLspServerDescriptor extends ProjectWideLspServerDescriptor {
+final class DevenvLspServerDescriptor extends LspServerDescriptor {
     private static final Logger LOG = Logger.getInstance(DevenvLspServerDescriptor.class);
 
     private static final String NIX_EXTENSION = "nix";
@@ -38,7 +43,7 @@ final class DevenvLspServerDescriptor extends ProjectWideLspServerDescriptor {
     private volatile JsonObject nixdConfiguration;
 
     DevenvLspServerDescriptor(@NotNull Project project, @NotNull VirtualFile devenvRoot) {
-        super(project, MyMessageBundle.message("lsp.devenv.presentableName"));
+        super(project, MyMessageBundle.message("lsp.devenv.presentableName"), devenvRoot);
         this.devenvRoot = devenvRoot;
     }
 
@@ -46,9 +51,16 @@ final class DevenvLspServerDescriptor extends ProjectWideLspServerDescriptor {
         return file.isInLocalFileSystem() && NIX_EXTENSION.equals(file.getExtension());
     }
 
+    /**
+     * The files of this root and no other. The cheap containment test comes first because this runs
+     * for every file the LSP client considers; the second one settles nested roots, where a file is
+     * held by two of them and belongs to the innermost.
+     */
     @Override
     public boolean isSupportedFile(@NotNull VirtualFile file) {
-        return isNixFile(file);
+        return isNixFile(file)
+                && VfsUtilCore.isAncestor(devenvRoot, file, false)
+                && devenvRoot.equals(DevenvCli.findDevenvRootFor(getProject(), file));
     }
 
     @Override

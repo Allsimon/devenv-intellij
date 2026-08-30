@@ -23,7 +23,10 @@ public final class DevenvLspServerSupportProvider implements LspServerSupportPro
             return;
         }
 
-        VirtualFile devenvRoot = DevenvCli.findDevenvRoot(project);
+        // The root holding the file, not the project's: a devenv.nix is only describable by the devenv
+        // it belongs to, and a project can hold several. The platform keeps one server per descriptor
+        // root, so a file of another module starts a server of its own.
+        VirtualFile devenvRoot = DevenvCli.findDevenvRootFor(project, file);
         if (devenvRoot == null) {
             return;
         }

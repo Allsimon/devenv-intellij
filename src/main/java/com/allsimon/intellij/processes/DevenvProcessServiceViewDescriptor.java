@@ -73,9 +73,10 @@ final class DevenvProcessServiceViewDescriptor implements ServiceViewDescriptor 
         return name;
     }
 
+    /** Qualified by the root: two devenv.nix of one project may well declare the same process name. */
     @Override
     public @NotNull String getUniqueId() {
-        return name;
+        return manager.getRoot().getPath() + "/" + name;
     }
 
     @Override

@@ -54,12 +54,17 @@ final class DevenvTreefmt {
     }
 
     /**
-     * The treefmt of {@code project}, or {@code null} when there isn't one - the project isn't a
-     * devenv project, 'devenv shell' has never built its profile, or treefmt isn't enabled. Callers
-     * are expected to fall back to the IDE's own formatting in that case.
+     * The treefmt that formats {@code file}, or {@code null} when there isn't one - the file lies
+     * outside every devenv root of the project, 'devenv shell' has never built that root's profile, or
+     * treefmt isn't enabled there. Callers are expected to fall back to the IDE's own formatting in
+     * that case.
+     * <p>
+     * Resolved from the file rather than from the project: each devenv.nix generates a treefmt
+     * configuration of its own, covering its own tree, and formatting a file with another root's would
+     * be formatting it by rules that don't apply to it.
      */
-    static @Nullable DevenvTreefmt resolve(@NotNull Project project) {
-        VirtualFile root = DevenvCli.findDevenvRoot(project);
+    static @Nullable DevenvTreefmt resolve(@NotNull Project project, @NotNull VirtualFile file) {
+        VirtualFile root = DevenvCli.findDevenvRootFor(project, file);
         if (root == null) {
             return null;
         }

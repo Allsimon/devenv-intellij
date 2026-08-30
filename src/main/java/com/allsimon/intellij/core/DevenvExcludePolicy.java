@@ -6,6 +6,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtilRt;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /**
  * Keeps devenv's '.devenv' state directory out of indexing, search and refactoring - the equivalent
  * of marking it 'Excluded' by hand.
@@ -27,11 +29,15 @@ public final class DevenvExcludePolicy implements DirectoryIndexExcludePolicy {
 
     @Override
     public String @NotNull [] getExcludeUrlsForProject() {
-        VirtualFile devenvRoot = DevenvCli.findDevenvRoot(project);
-        if (devenvRoot == null) {
+        // Every root, not just the outermost one: each devenv.nix gets a state directory of its own, and
+        // a module's is as full of store symlinks as the project's.
+        List<VirtualFile> devenvRoots = DevenvCli.findDevenvRoots(project);
+        if (devenvRoots.isEmpty()) {
             return ArrayUtilRt.EMPTY_STRING_ARRAY;
         }
-        // The directory need not exist yet - devenv creates it on the first 'devenv shell'.
-        return new String[]{devenvRoot.getUrl() + "/" + DevenvCli.STATE_DIRECTORY};
+        // The directories need not exist yet - devenv creates one on the first 'devenv shell'.
+        return devenvRoots.stream()
+                .map(root -> root.getUrl() + "/" + DevenvCli.STATE_DIRECTORY)
+                .toArray(String[]::new);
     }
 }
