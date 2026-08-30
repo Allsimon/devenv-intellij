@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-30
+
 ### Added
 
 - Nix files in a project with a `devenv.nix` are now backed by the language server started by `devenv lsp`,
