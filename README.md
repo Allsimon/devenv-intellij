@@ -19,7 +19,7 @@ with a screenshot captured from a real IDE; the table below and those pages are 
 
 | Feature                                 | Description                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Nix editing](docs/lsp.md)              | `.nix` files are backed by the language server started by `devenv lsp`                           |
+| [Nix editing](docs/lsp.md)              | `.nix` files are backed by nixd configured for the project's devenv                             |
 | [`devenv.yaml` editing](docs/schema.md) | `devenv.yaml` is mapped to the JSON schema devenv publishes, without the `$schema` modeline      |
 | [Processes](docs/processes.md)          | The processes declared under `processes` appear in the Services tool window                      |
 | [Project SDK](docs/jdk.md)              | The Project SDK is set to the JDK devenv declares, and put back when something moves it          |
@@ -53,7 +53,7 @@ packages share; each feature package depends on it and on none of the others.
 │   │   │   ├── gradle/     Gradle distribution and JVM taken from 'languages.java.gradle' instead of the wrapper
 │   │   │   ├── javascript/ Node.js interpreter and package manager taken from 'languages.javascript'
 │   │   │   ├── jdk/        Project SDK set to the JDK declared under 'languages.java'
-│   │   │   ├── lsp/        Nix language support, backed by 'devenv lsp'
+│   │   │   ├── lsp/        Nix language support, backed by nixd configured through devenv
 │   │   │   ├── maven/      Maven home path taken from 'languages.java.maven'
 │   │   │   ├── processes/  devenv processes in the Services tool window
 │   │   │   ├── schema/     devenv.yaml mapped to the JSON schema devenv publishes

@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Backs Nix files with the language server started by {@code devenv lsp}, so that devenv options get
- * completion, documentation and diagnostics inside 'devenv.nix' and the files it imports.
+ * Backs Nix files with nixd configured by devenv, so that devenv options get completion,
+ * documentation and diagnostics inside 'devenv.nix' and the files it imports.
  */
 public final class DevenvLspServerSupportProvider implements LspServerSupportProvider {
 

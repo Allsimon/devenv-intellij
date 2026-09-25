@@ -39,8 +39,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * Drives the real `devenv lsp` process (nixd) over stdio, the same way the IntelliJ Platform LSP
- * client does, to guard the fix in {@link DevenvLspServerDescriptor#getWorkspaceConfiguration}:
+ * Drives the real nixd process over stdio, the same way the IntelliJ Platform LSP client does, to
+ * guard the fix in {@link DevenvLspServerDescriptor#getWorkspaceConfiguration}:
  * nixd requests its configuration lazily via 'workspace/configuration' rather than accepting it
  * as a command-line argument, and silently falls back to plain NixOS options/nixpkgs if that
  * request goes unanswered - which made devenv module options like `languages.java.enable` fail to
@@ -62,14 +62,16 @@ public class DevenvLspIntegrationTest {
         assumeTrue("this test must run from the devenv-intellij checkout (its own devenv.nix is the fixture)",
                 new File(devenvRoot, "devenv.nix").isFile());
 
-        File executable = PathEnvironmentVariableUtil.findInPath("devenv");
-        assumeTrue("devenv must be on PATH to run this integration test", executable != null);
+        File devenvExecutable = PathEnvironmentVariableUtil.findInPath("devenv");
+        assumeTrue("devenv must be on PATH to run this integration test", devenvExecutable != null);
+        File nixdExecutable = PathEnvironmentVariableUtil.findInPath("nixd");
+        assumeTrue("nixd must be on PATH to run this integration test", nixdExecutable != null);
 
-        serverProcess = new ProcessBuilder(executable.getAbsolutePath(), "lsp")
+        serverProcess = new ProcessBuilder(nixdExecutable.getAbsolutePath())
                 .directory(devenvRoot)
                 .start();
 
-        WorkspaceConfiguringClient client = new WorkspaceConfiguringClient(devenvRoot, executable);
+        WorkspaceConfiguringClient client = new WorkspaceConfiguringClient(devenvRoot, devenvExecutable);
         Launcher<LanguageServer> launcher = LSPLauncher.createClientLauncher(
                 client, serverProcess.getInputStream(), serverProcess.getOutputStream());
         launcher.startListening();
