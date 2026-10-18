@@ -3,7 +3,9 @@
   stdenv,
   runCommand,
   symlinkJoin,
+  writeShellScript,
   gradle,
+  jq,
   jdk,
   unzip,
 }:
@@ -41,9 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   # Regenerate deps.json with:
-  #   $(nix-build --no-out-link -A mitmCache.updateScript)
-  # then drop the entry that products-IU.json replaces:
-  #   jq 'del(."https:/"."data.services.jetbrains")' deps.json | sponge deps.json
+  #   $(devenv build outputs.devenv-intellij.mitmCache.updateScript | jq -r '.[]')
   mitmCache =
     let
       deps = gradle.fetchDeps {
@@ -68,7 +68,14 @@ stdenv.mkDerivation (finalAttrs: {
         deps
         productsListing
       ];
-      passthru = { inherit (deps) updateScript; };
+      # Drop the entry that products-IU.json replaces.
+      passthru.updateScript = writeShellScript "update-${finalAttrs.pname}-deps" ''
+        set -euo pipefail
+        ${deps.updateScript}
+        out=${lib.escapeShellArg (toString ./deps.json)}
+        ${lib.getExe jq} 'del(."https:/"."data.services.jetbrains")' "$out" > "$out.tmp"
+        mv "$out.tmp" "$out"
+      '';
     };
 
   # The IntelliJ Platform Gradle Plugin resolves the target IDE through Java
