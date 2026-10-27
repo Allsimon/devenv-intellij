@@ -6,9 +6,10 @@ section 5), and Reformat Code delegating to treefmt (`treefmt`, section 6).
 
 # Troubleshooting the devenv language server
 
-This plugin doesn't ship its own language intelligence for `devenv.nix` — it just tells the
-IntelliJ Platform LSP client to launch `devenv lsp` (which wraps `nixd`) and hand it any `.nix`
-file. When "the LSP doesn't seem to do anything" the fault sits in one of three places: the
+This plugin doesn't ship its own language intelligence for `devenv.nix`. It tells the IntelliJ
+Platform LSP client to launch a `nixd` found on `PATH`, then supplies the configuration from
+`devenv lsp --print-config` through LSP. If no standalone `nixd` is available, it falls back to
+`devenv lsp`. When "the LSP doesn't seem to do anything" the fault sits in one of three places: the
 plugin never asked the platform to start a server, the process failed to start, or it started
 but `nixd` isn't producing useful output. The steps below narrow that down using the sandbox
 IDE's own log, without needing to add any printlns or attach a debugger.
@@ -32,8 +33,8 @@ A **healthy** startup looks like this (four lines, in order):
 
 ```
 INFO - #c.i.p.l.i.LspServerImpl - DevenvLspServerDescriptor@<project>(Initializing;0): Starting LSP server
-INFO - #c.i.p.l.a.LspServerDescriptor - DevenvLspServerDescriptor@<project>: starting LSP server: /nix/store/.../devenv [lsp]
-INFO - #c.i.p.l.i.LspServerImpl - DevenvLspServerDescriptor@<project>(Initializing;0): LSP server process started: .../devenv lsp
+INFO - #c.i.p.l.a.LspServerDescriptor - DevenvLspServerDescriptor@<project>: starting LSP server: /nix/store/.../nixd
+INFO - #c.i.p.l.i.LspServerImpl - DevenvLspServerDescriptor@<project>(Initializing;0): LSP server process started: .../nixd
 INFO - #c.i.p.l.i.LspServerImpl - DevenvLspServerDescriptor@<project>(Running;0): LSP server initialized in 0.259s, name = nixd, version = 2.9.2
 ```
 
@@ -78,7 +79,7 @@ plugins` block near the top of `idea.log` and confirm `com.allsimon.devenv` isn'
 
 ## 3. Log stops after "starting LSP server" / process never initializes
 
-This means `GeneralCommandLine` failed to launch `devenv`, or `devenv lsp` exited immediately.
+This means `GeneralCommandLine` failed to launch nixd, or the language server exited immediately.
 
 - **`Cannot find 'devenv' in PATH`** (this plugin's own error, from
   [`MyMessageBundle.properties`][file:MyMessageBundle.properties],
@@ -86,19 +87,17 @@ This means `GeneralCommandLine` failed to launch `devenv`, or `devenv lsp` exite
   against the **PATH of the JVM running the sandbox IDE**, i.e. whatever environment `gradle
 runIde` itself inherited — not your interactive shell's `PATH` if `runIde` was launched some
   other way (IDE "Run" button with a stale run configuration, a cron/CI job, a GUI launcher).
-  Fix: always launch `gradle runIde` from inside `devenv shell` in this repo, so `devenv` (and
+  Fix: always launch `gradle runIde` from inside `devenv shell` in this repo, so `devenv`, `nixd` (and
   the pinned `JETBRAINS_RUNTIME`, per the comment at the top of
   [`devenv.nix`][file:devenv.nix]) are on `PATH` before Gradle ever starts.
 - **Process started but exited right away**: look for `STDERR` lines immediately after "LSP
-  server process started" — `devenv lsp` prints its own errors there (e.g. it couldn't evaluate
-  `devenv.nix`, missing `devenv.lock`, or the project isn't a valid devenv project at all). Those
-  come straight from the `devenv`/`nixd` CLI, so reproducing `devenv lsp` by hand in a terminal
-  _inside the target project's directory_ (the one containing its `devenv.nix`, not this plugin's
-  repo) is the fastest way to see the real error without the IDE in the loop.
-- Since `createCommandLine` sets `ParentEnvironmentType.CONSOLE`, the spawned `devenv lsp`
-  process gets the sandbox IDE's inherited console environment (Nix profile variables, etc.) —
-  if that's wrong, it'll typically fail the same way a plain terminal invocation of `devenv lsp`
-  would from the same shell.
+  server process started". Those come straight from nixd. Run `nixd` by hand inside the target
+  project's directory to reproduce startup errors without the IDE in the loop.
+- The plugin runs `devenv lsp --print-config` when nixd asks for its configuration. Failures from
+  that command appear as warnings in `idea.log`; running it in the target project's directory shows
+  evaluation errors directly.
+- Since `createCommandLine` sets `ParentEnvironmentType.CONSOLE`, nixd gets the sandbox IDE's
+  inherited console environment, including Nix profile variables.
 
 ## 4. Server initializes, but no completions/diagnostics/hover show up in the editor
 
@@ -183,7 +182,7 @@ printf '{ x =    1; }\n' | .devenv/profile/bin/treefmt --stdin devenv.nix --quie
 | -------------------------------------------------------------- | ------------------------------------------------------------- |
 | No `DevenvLspServerDescriptor` lines at all                    | Wrong project root, wrong file type, or plugin didn't load    |
 | `Cannot find 'devenv' in PATH`                                 | `runIde` launched outside `devenv shell`                      |
-| "Starting LSP server" then nothing / immediate `STDERR` error  | `devenv lsp` itself failed — reproduce it directly in a shell |
+| "Starting LSP server" then nothing / immediate `STDERR` error  | nixd failed to start; run `nixd` directly in the project root |
 | Full four-line healthy sequence + paired request/reply traffic | Server works; look at the editor/UI side, not the LSP wiring  |
 | No `devenv` node in Services at all                            | No `devenv.nix` at a content root, or no `processes` declared |
 | Reformat Code doesn't run treefmt                              | No `.devenv/profile` yet, or no formatter covers that file    |

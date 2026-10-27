@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -20,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 /**
- * Describes the language server started by {@code devenv lsp}: a nixd instance preconfigured with the
- * devenv module options and the nixpkgs pinned by the devenv.lock of one root.
+ * Describes a nixd instance configured with the devenv module options and the nixpkgs pinned by the
+ * devenv.lock of one root.
  * <p>
  * Rooted at that directory rather than at the project: the platform identifies a server by its
  * descriptor's class, name and roots, so a project holding several devenv.nix gets one server each,
@@ -31,6 +32,7 @@ final class DevenvLspServerDescriptor extends LspServerDescriptor {
     private static final Logger LOG = Logger.getInstance(DevenvLspServerDescriptor.class);
 
     private static final String NIX_EXTENSION = "nix";
+    private static final String NIXD_EXECUTABLE = "nixd";
 
     // nixd doesn't take the config that `devenv lsp --print-config` computes (pointing it at the
     // devenv module's own options and the nixpkgs pinned by devenv.lock) via a command-line flag: it
@@ -109,14 +111,28 @@ final class DevenvLspServerDescriptor extends LspServerDescriptor {
 
     @Override
     public @NotNull GeneralCommandLine createCommandLine() throws ExecutionException {
-        return createCommandLine(DevenvCli.findExecutable());
+        return createCommandLine(DevenvCli.findExecutable(), findNixdExecutable());
     }
 
-    /** Split out from {@link #createCommandLine()} so tests can supply an executable without touching PATH. */
-    @NotNull GeneralCommandLine createCommandLine(@Nullable File executable) throws ExecutionException {
-        if (executable == null) {
+    private static @Nullable File findNixdExecutable() {
+        return PathEnvironmentVariableUtil.findInPath(NIXD_EXECUTABLE);
+    }
+
+    /** Split out from {@link #createCommandLine()} so tests can supply executables without touching PATH. */
+    @NotNull GeneralCommandLine createCommandLine(@Nullable File devenvExecutable,
+                                                  @Nullable File nixdExecutable) throws ExecutionException {
+        if (devenvExecutable == null) {
             throw new ExecutionException(MyMessageBundle.message("lsp.devenv.executableNotFound", DevenvCli.EXECUTABLE));
         }
-        return DevenvCli.commandLine(executable, devenvRoot.getPath(), "lsp");
+
+        // Current nixd receives its settings through workspace/configuration. Some devenv releases
+        // still invoke it with the removed --config and --env-config flags, making `devenv lsp`
+        // exit before the LSP handshake. Start nixd directly when it is on PATH; this descriptor
+        // already supplies the config from `devenv lsp --print-config` above. Keep the wrapper as a
+        // fallback because devenv bundles nixd without necessarily exposing it as a separate command.
+        if (nixdExecutable != null) {
+            return DevenvCli.commandLine(nixdExecutable, devenvRoot.getPath());
+        }
+        return DevenvCli.commandLine(devenvExecutable, devenvRoot.getPath(), "lsp");
     }
 }

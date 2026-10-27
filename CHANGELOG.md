@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Nix editing now starts a standalone `nixd` directly when one is on `PATH`, avoiding devenv versions
+  that pass the removed `--config` and `--env-config` command-line options to current nixd releases.
+
 ## [1.0.0] - 2026-08-30
 
 ### Added
