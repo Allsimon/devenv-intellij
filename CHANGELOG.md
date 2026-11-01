@@ -6,6 +6,9 @@
 
 ### Added
 
+- Nix files opened as text are now syntax-highlighted with graalnix's highlighter: keywords, strings and
+  their escapes and interpolations, comments, numbers, paths, attribute names, parameters, builtins and
+  constants. A plugin that gives Nix a file type of its own keeps doing the highlighting.
 - A Nix lint inspection reports dead code, simplifiable patterns, undefined variables and nixpkgs packaging
   mistakes in Nix files, with graalnix's linter, and fixes most of them as quick fixes. Each of its rules can be
   switched off in the inspection's options.

@@ -61,6 +61,11 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="com.allsimon.intellij.nixlint.GraalnixLintInspection"/>
 
+        <syntaxHighlighter key="PLAIN_TEXT"
+                           factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>
+        <syntaxHighlighter key="AUTO_DETECTED"
+                           factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>
+
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>
