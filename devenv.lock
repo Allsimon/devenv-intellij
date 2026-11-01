@@ -61,11 +61,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793568033,
-        "narHash": "sha256-fHMvI9JLcXeoQDlWlfXpCF3x5YEtdQVBySiFMte8mik=",
+        "lastModified": 1793571292,
+        "narHash": "sha256-GG5vFBsmE2w8vraeDYIATKyW4i2reRet2u9StOsLyYA=",
         "owner": "Allsimon",
         "repo": "graalnix",
-        "rev": "e0aa06ff638c2215bab9eca881c812752dd37454",
+        "rev": "aa6a36b6ae9ca123505bb5eacf8e8de07a58fb14",
         "type": "github"
       },
       "original": {
