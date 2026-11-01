@@ -8,50 +8,56 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DevenvGradleTest {
-    /** What 'devenv eval languages.java.gradle.enable languages.java.gradle.package' prints. */
-    private static final String ENABLED = """
-            {
-              "languages.java.gradle.enable": true,
-              "languages.java.gradle.package": "/nix/store/xxx-gradle-9.5.1"
-            }
-            """;
-
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void readsThePackageOfAProjectThatEnablesGradle() {
-        assertEquals("/nix/store/xxx-gradle-9.5.1", DevenvGradle.parsePackage(ENABLED));
+    public void readsWhetherTheProjectBuildsWithGradle() {
+        assertTrue(DevenvGradle.parseEnabled(flags(true, true)));
+        assertFalse(DevenvGradle.parseEnabled(flags(true, false)));
     }
 
     /**
-     * The package option has a default, so it evaluates to a perfectly good store path even in a
-     * project that builds with something else - which is why the enable flag is evaluated with it.
+     * The package option only has a value when {@code languages.java} is enabled: evaluating it
+     * otherwise fails, so the package is not asked for at all then.
      */
     @Test
-    public void ignoresThePackageOfAProjectThatDoesNotEnableGradle() {
-        assertNull(DevenvGradle.parsePackage("""
+    public void readsAProjectWithoutJavaAsNotBuildingWithGradle() {
+        assertFalse(DevenvGradle.parseEnabled(flags(false, true)));
+    }
+
+    @Test
+    public void readsMissingOrMalformedFlagsAsDisabled() {
+        assertFalse(DevenvGradle.parseEnabled("{\"languages.java.gradle.enable\": true}"));
+        assertFalse(DevenvGradle.parseEnabled("""
                 {
-                  "languages.java.gradle.enable": false,
-                  "languages.java.gradle.package": "/nix/store/xxx-gradle-9.5.1"
+                  "languages.java.enable": true,
+                  "languages.java.gradle.enable": "true"
                 }
                 """));
     }
 
     @Test
-    public void returnsNothingWhenAnAttributeIsMissingOrMalformed() {
+    public void readsThePackage() {
+        assertEquals("/nix/store/xxx-gradle-9.5.1",
+                DevenvGradle.parsePackage("{\"languages.java.gradle.package\": \"/nix/store/xxx-gradle-9.5.1\"}"));
+    }
+
+    @Test
+    public void returnsNothingWhenThePackageIsMissingOrMalformed() {
         assertNull(DevenvGradle.parsePackage("{\"languages.java.gradle.enable\": true}"));
-        assertNull(DevenvGradle.parsePackage("{\"languages.java.gradle.package\": \"/nix/store/xxx-gradle-9.5.1\"}"));
-        assertNull(DevenvGradle.parsePackage("""
-                {
-                  "languages.java.gradle.enable": "true",
-                  "languages.java.gradle.package": "/nix/store/xxx-gradle-9.5.1"
-                }
-                """));
+        assertNull(DevenvGradle.parsePackage("{\"languages.java.gradle.package\": 1}"));
         assertNull(DevenvGradle.parsePackage("[]"));
+    }
+
+    /** What 'devenv eval languages.java.enable languages.java.gradle.enable' prints. */
+    private static String flags(boolean java, boolean gradle) {
+        return "{\"languages.java.enable\": " + java + ", \"languages.java.gradle.enable\": " + gradle + "}";
     }
 
     /** How the nixpkgs Gradle is laid out: a wrapper in bin, the distribution under libexec/gradle. */

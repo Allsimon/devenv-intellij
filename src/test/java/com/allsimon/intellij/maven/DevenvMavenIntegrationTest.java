@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -36,19 +36,19 @@ public class DevenvMavenIntegrationTest {
     public void leavesAloneAProjectThatDoesNotEnableMaven() throws Exception {
         Path root = devenvRoot();
 
-        String output = eval(root, List.of(), DevenvMaven.ENABLE_ATTRIBUTE, DevenvMaven.PACKAGE_ATTRIBUTE);
+        String flags = eval(root, List.of(), DevenvMaven.JAVA_ENABLE_ATTRIBUTE, DevenvMaven.ENABLE_ATTRIBUTE);
 
-        assertTrue("the package attribute evaluates even here, which is what makes the flag necessary",
-                output.contains(DevenvMaven.PACKAGE_ATTRIBUTE));
-        assertNull("this project builds with Gradle", DevenvMaven.parsePackage(output));
+        assertFalse("this project builds with Gradle", DevenvMaven.parseEnabled(flags));
     }
 
     @Test
     public void evaluatesAMavenPackageWhenTheProjectEnablesIt() throws Exception {
         Path root = devenvRoot();
+        assertTrue(DevenvMaven.parseEnabled(
+                eval(root, ENABLE_MAVEN, DevenvMaven.JAVA_ENABLE_ATTRIBUTE, DevenvMaven.ENABLE_ATTRIBUTE)));
 
         String storePath = DevenvMaven.parsePackage(
-                eval(root, ENABLE_MAVEN, DevenvMaven.ENABLE_ATTRIBUTE, DevenvMaven.PACKAGE_ATTRIBUTE));
+                eval(root, ENABLE_MAVEN, DevenvMaven.PACKAGE_ATTRIBUTE));
 
         assertNotNull("with the option forced on, devenv has to name a Maven", storePath);
         assertTrue("expected a Maven store path, got " + storePath, storePath.contains("maven"));
@@ -59,7 +59,7 @@ public class DevenvMavenIntegrationTest {
         Path root = devenvRoot();
 
         String storePath = DevenvMaven.parsePackage(
-                eval(root, ENABLE_MAVEN, DevenvMaven.ENABLE_ATTRIBUTE, DevenvMaven.PACKAGE_ATTRIBUTE));
+                eval(root, ENABLE_MAVEN, DevenvMaven.PACKAGE_ATTRIBUTE));
         assertNotNull(storePath);
         assumeTrue("the Maven devenv names has never been built here", Files.isDirectory(Path.of(storePath)));
 
