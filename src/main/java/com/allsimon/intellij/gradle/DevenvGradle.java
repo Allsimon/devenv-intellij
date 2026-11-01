@@ -15,14 +15,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 /**
  * The Gradle a devenv project declares, as {@code devenv eval} reports it.
  * <p>
- * Two attributes are read in a single evaluation: whether {@code languages.java.gradle} is enabled at
- * all, and where its Gradle lives.
+ * Whether {@code languages.java} and {@code languages.java.gradle} are enabled is read first, and where
+ * its Gradle lives only when both are: the package option has no value otherwise, and evaluating it fails.
  * <p>
  * The store path devenv reports is not itself the Gradle home the IDE wants. A Gradle home is the
  * directory holding {@code lib/gradle-launcher-<version>.jar}, and the nixpkgs Gradle keeps the
@@ -34,6 +35,7 @@ import java.util.stream.Stream;
 final class DevenvGradle {
     private static final Logger LOG = Logger.getInstance(DevenvGradle.class);
 
+    static final String JAVA_ENABLE_ATTRIBUTE = "languages.java.enable";
     static final String ENABLE_ATTRIBUTE = "languages.java.gradle.enable";
     static final String PACKAGE_ATTRIBUTE = "languages.java.gradle.package";
 
@@ -67,51 +69,70 @@ final class DevenvGradle {
     }
 
     private static @Nullable String evaluatePackage(@NotNull File executable, @NotNull VirtualFile devenvRoot) {
-        ProcessOutput output;
-        try {
-            // No timeout: the first evaluation of a project has to evaluate the whole devenv
-            // configuration, which takes minutes against a cold nix eval cache.
-            output = DevenvCli.run(DevenvCli.commandLine(
-                    executable, devenvRoot.getPath(), "eval", ENABLE_ATTRIBUTE, PACKAGE_ATTRIBUTE));
-        } catch (ExecutionException e) {
-            LOG.warn("Failed to run 'devenv eval' in " + devenvRoot.getPath(), e);
+        String flags = eval(executable, devenvRoot, JAVA_ENABLE_ATTRIBUTE, ENABLE_ATTRIBUTE);
+        if (flags == null) {
             return null;
         }
-
-        if (output.getExitCode() != 0) {
-            LOG.warn("'devenv eval " + ENABLE_ATTRIBUTE + " " + PACKAGE_ATTRIBUTE + "' exited with "
-                    + output.getExitCode() + ": " + output.getStderr());
-            return null;
-        }
-
         try {
-            return parsePackage(output.getStdout());
+            if (!parseEnabled(flags)) {
+                return null;
+            }
+            String storePath = eval(executable, devenvRoot, PACKAGE_ATTRIBUTE);
+            return storePath == null ? null : parsePackage(storePath);
         } catch (RuntimeException e) {
             LOG.warn("Failed to parse 'devenv eval' output", e);
             return null;
         }
     }
 
+    private static @Nullable String eval(@NotNull File executable, @NotNull VirtualFile devenvRoot,
+                                         @NotNull String... attributes) {
+        ProcessOutput output;
+        try {
+            // No timeout: the first evaluation of a project has to evaluate the whole devenv
+            // configuration, which takes minutes against a cold nix eval cache.
+            List<String> arguments = new ArrayList<>(List.of("eval"));
+            arguments.addAll(List.of(attributes));
+            output = DevenvCli.run(DevenvCli.commandLine(
+                    executable, devenvRoot.getPath(), arguments.toArray(String[]::new)));
+        } catch (ExecutionException e) {
+            LOG.warn("Failed to run 'devenv eval' in " + devenvRoot.getPath(), e);
+            return null;
+        }
+
+        if (output.getExitCode() != 0) {
+            LOG.warn("'devenv eval " + String.join(" ", attributes) + "' exited with "
+                    + output.getExitCode() + ": " + output.getStderr());
+            return null;
+        }
+        return output.getStdout();
+    }
+
     /**
-     * Reads the {@code {"languages.java.gradle.enable": true, "languages.java.gradle.package": "/nix/store/..."}}
-     * document {@code devenv eval} prints, and returns the store path only when Gradle is actually
-     * enabled - the package attribute has a default and evaluates just as well in a project that
-     * builds with something else entirely.
+     * Reads the {@code {"languages.java.enable": true, "languages.java.gradle.enable": true}} document
+     * {@code devenv eval} prints: whether the project builds with the Gradle of {@code languages.java}.
      */
+    static boolean parseEnabled(@NotNull String evalOutput) {
+        JsonElement root = JsonParser.parseString(DevenvCli.stripAnsi(evalOutput));
+        if (!root.isJsonObject()) {
+            return false;
+        }
+        JsonObject object = root.getAsJsonObject();
+        return isTrue(object.get(JAVA_ENABLE_ATTRIBUTE)) && isTrue(object.get(ENABLE_ATTRIBUTE));
+    }
+
+    private static boolean isTrue(@Nullable JsonElement element) {
+        return element != null && element.isJsonPrimitive() && element.getAsJsonPrimitive().isBoolean()
+                && element.getAsBoolean();
+    }
+
+    /** Reads the {@code {"languages.java.gradle.package": "/nix/store/..."}} document {@code devenv eval} prints. */
     static @Nullable String parsePackage(@NotNull String evalOutput) {
         JsonElement root = JsonParser.parseString(DevenvCli.stripAnsi(evalOutput));
         if (!root.isJsonObject()) {
             return null;
         }
-        JsonObject object = root.getAsJsonObject();
-
-        JsonElement enabled = object.get(ENABLE_ATTRIBUTE);
-        if (enabled == null || !enabled.isJsonPrimitive() || !enabled.getAsJsonPrimitive().isBoolean()
-                || !enabled.getAsBoolean()) {
-            return null;
-        }
-
-        JsonElement storePath = object.get(PACKAGE_ATTRIBUTE);
+        JsonElement storePath = root.getAsJsonObject().get(PACKAGE_ATTRIBUTE);
         if (storePath == null || !storePath.isJsonPrimitive() || !storePath.getAsJsonPrimitive().isString()) {
             return null;
         }

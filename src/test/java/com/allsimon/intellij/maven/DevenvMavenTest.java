@@ -8,50 +8,56 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DevenvMavenTest {
-    /** What 'devenv eval languages.java.maven.enable languages.java.maven.package' prints. */
-    private static final String ENABLED = """
-            {
-              "languages.java.maven.enable": true,
-              "languages.java.maven.package": "/nix/store/xxx-maven-3.9.16"
-            }
-            """;
-
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void readsThePackageOfAProjectThatEnablesMaven() {
-        assertEquals("/nix/store/xxx-maven-3.9.16", DevenvMaven.parsePackage(ENABLED));
+    public void readsWhetherTheProjectBuildsWithMaven() {
+        assertTrue(DevenvMaven.parseEnabled(flags(true, true)));
+        assertFalse(DevenvMaven.parseEnabled(flags(true, false)));
     }
 
     /**
-     * The package option has a default, so it evaluates to a perfectly good store path even in a
-     * project that builds with Gradle - which is why the enable flag is evaluated with it.
+     * The package option only has a value when {@code languages.java} is enabled: evaluating it
+     * otherwise fails, so the package is not asked for at all then.
      */
     @Test
-    public void ignoresThePackageOfAProjectThatDoesNotEnableMaven() {
-        assertNull(DevenvMaven.parsePackage("""
+    public void readsAProjectWithoutJavaAsNotBuildingWithMaven() {
+        assertFalse(DevenvMaven.parseEnabled(flags(false, true)));
+    }
+
+    @Test
+    public void readsMissingOrMalformedFlagsAsDisabled() {
+        assertFalse(DevenvMaven.parseEnabled("{\"languages.java.maven.enable\": true}"));
+        assertFalse(DevenvMaven.parseEnabled("""
                 {
-                  "languages.java.maven.enable": false,
-                  "languages.java.maven.package": "/nix/store/xxx-maven-3.9.16"
+                  "languages.java.enable": true,
+                  "languages.java.maven.enable": "true"
                 }
                 """));
     }
 
     @Test
-    public void returnsNothingWhenAnAttributeIsMissingOrMalformed() {
+    public void readsThePackage() {
+        assertEquals("/nix/store/xxx-maven-3.9.16",
+                DevenvMaven.parsePackage("{\"languages.java.maven.package\": \"/nix/store/xxx-maven-3.9.16\"}"));
+    }
+
+    @Test
+    public void returnsNothingWhenThePackageIsMissingOrMalformed() {
         assertNull(DevenvMaven.parsePackage("{\"languages.java.maven.enable\": true}"));
-        assertNull(DevenvMaven.parsePackage("{\"languages.java.maven.package\": \"/nix/store/xxx-maven-3.9.16\"}"));
-        assertNull(DevenvMaven.parsePackage("""
-                {
-                  "languages.java.maven.enable": "true",
-                  "languages.java.maven.package": "/nix/store/xxx-maven-3.9.16"
-                }
-                """));
+        assertNull(DevenvMaven.parsePackage("{\"languages.java.maven.package\": 1}"));
         assertNull(DevenvMaven.parsePackage("not json at all"));
+    }
+
+    /** What 'devenv eval languages.java.enable languages.java.maven.enable' prints. */
+    private static String flags(boolean java, boolean maven) {
+        return "{\"languages.java.enable\": " + java + ", \"languages.java.maven.enable\": " + maven + "}";
     }
 
     /** How the nixpkgs Maven is laid out: a wrapper in bin, the distribution copied into maven/. */

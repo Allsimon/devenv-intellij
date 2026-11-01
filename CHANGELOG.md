@@ -9,6 +9,12 @@
 - Reformat Code now formats Nix files in the style of nixfmt, with a formatter built into the plugin
   (graalnix's port of nixfmt 1.5.0), unless the project's treefmt formats them.
 
+### Fixed
+
+- The Gradle distribution and Maven home are no longer looked up in a project that doesn't enable
+  `languages.java`, where devenv failed with "The option `languages.java.gradle.package' was accessed but has
+  no value defined".
+
 ## [1.0.0] - 2026-08-30
 
 ### Added

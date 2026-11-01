@@ -18,7 +18,8 @@ import static org.junit.Assume.assumeTrue;
  * Pins the {@code devenv eval} contract {@link DevenvGradleDistribution} depends on, against the real
  * devenv of this checkout - whose devenv.nix enables {@code languages.java.gradle}:
  * <ul>
- *   <li>the two attributes come back as one JSON object {@link DevenvGradle#parsePackage} can read;</li>
+ *   <li>the flags and the package come back as JSON objects {@link DevenvGradle#parseEnabled} and
+ *       {@link DevenvGradle#parsePackage} can read;</li>
  *   <li>the store path they name holds a Gradle distribution that the IDE accepts as a local one,
  *       which means a {@code lib/gradle-launcher-<version>.jar} - and it is not at the top of the
  *       store path, which is the whole reason {@link DevenvGradle#findHome} looks around.</li>
@@ -31,9 +32,11 @@ public class DevenvGradleIntegrationTest {
     @Test
     public void evaluatesAGradleDistributionTheIdeCanUse() throws Exception {
         Path root = devenvRoot();
+        assertTrue("this project's devenv.nix enables languages.java.gradle", DevenvGradle.parseEnabled(
+                eval(root, DevenvGradle.JAVA_ENABLE_ATTRIBUTE, DevenvGradle.ENABLE_ATTRIBUTE)));
 
         String storePath = DevenvGradle.parsePackage(
-                eval(root, DevenvGradle.ENABLE_ATTRIBUTE, DevenvGradle.PACKAGE_ATTRIBUTE));
+                eval(root, DevenvGradle.PACKAGE_ATTRIBUTE));
 
         assertNotNull("this project's devenv.nix enables languages.java.gradle", storePath);
         Path home = DevenvGradle.findHome(Path.of(storePath));
@@ -47,7 +50,7 @@ public class DevenvGradleIntegrationTest {
         Path root = devenvRoot();
 
         String storePath = DevenvGradle.parsePackage(
-                eval(root, DevenvGradle.ENABLE_ATTRIBUTE, DevenvGradle.PACKAGE_ATTRIBUTE));
+                eval(root, DevenvGradle.PACKAGE_ATTRIBUTE));
         assertNotNull(storePath);
 
         assertTrue("the package devenv reports is the one whose 'gradle' a shell would run",
@@ -59,7 +62,7 @@ public class DevenvGradleIntegrationTest {
         Path root = devenvRoot();
 
         String storePath = DevenvGradle.parsePackage(
-                eval(root, DevenvGradle.ENABLE_ATTRIBUTE, DevenvGradle.PACKAGE_ATTRIBUTE));
+                eval(root, DevenvGradle.PACKAGE_ATTRIBUTE));
         assertNotNull(storePath);
         Path home = DevenvGradle.findHome(Path.of(storePath));
         assertNotNull(home);
