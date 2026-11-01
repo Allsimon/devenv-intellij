@@ -29,6 +29,14 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
+      # The graalnix formatter jars, at the revision devenv.lock pins
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - name: Build graalnix
+        run: |
+          nix build "github:Allsimon/graalnix/$(jq -r .nodes.graalnix.locked.rev devenv.lock)#maven-repo" -o graalnix-repo
+          echo "GRAALNIX_MAVEN_REPO=$PWD/graalnix-repo" >> "$GITHUB_ENV"
+
       # Set up the Java environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v6

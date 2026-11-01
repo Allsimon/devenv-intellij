@@ -54,6 +54,26 @@
         "type": "github"
       }
     },
+    "graalnix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793568033,
+        "narHash": "sha256-fHMvI9JLcXeoQDlWlfXpCF3x5YEtdQVBySiFMte8mik=",
+        "owner": "Allsimon",
+        "repo": "graalnix",
+        "rev": "e0aa06ff638c2215bab9eca881c812752dd37454",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Allsimon",
+        "repo": "graalnix",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "inputs": {
         "nixpkgs-src": "nixpkgs-src"
@@ -94,6 +114,7 @@
       "inputs": {
         "devenv": "devenv",
         "git-hooks": "git-hooks",
+        "graalnix": "graalnix",
         "nixpkgs": "nixpkgs",
         "treefmt-nix": "treefmt-nix"
       }

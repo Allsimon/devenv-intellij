@@ -8,6 +8,7 @@
   jq,
   jdk,
   unzip,
+  graalnixMavenRepo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -84,6 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
   gradleFlags = [
     "-Dorg.gradle.java.installations.auto-download=false"
     "-Porg.gradle.java.installations.paths=${jdk}"
+    "-PgraalnixRepo=${graalnixMavenRepo}"
     # buildSearchableOptions starts the downloaded IDE, whose bundled JetBrains
     # Runtime is a prebuilt binary that can't run here.
     "-x"

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Reformat Code now formats Nix files in the style of nixfmt, with a formatter built into the plugin
+  (graalnix's port of nixfmt 1.5.0), unless the project's treefmt formats them.
+
 ## [1.0.0] - 2026-08-30
 
 ### Added

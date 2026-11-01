@@ -18,6 +18,14 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
 
+        // graalnix's formatter, built by its flake (the maven-repo package): devenv exports it, the Nix build passes -PgraalnixRepo.
+        providers.gradleProperty("graalnixRepo").orElse(providers.environmentVariable("GRAALNIX_MAVEN_REPO")).orNull?.let { repo ->
+            maven {
+                url = uri(repo)
+                content { includeGroup("org.graalnix") }
+            }
+        }
+
         // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
         intellijPlatform {
             defaultRepositories()
