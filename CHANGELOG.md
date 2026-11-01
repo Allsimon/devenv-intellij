@@ -6,6 +6,9 @@
 
 ### Added
 
+- A Nix lint inspection reports dead code, simplifiable patterns, undefined variables and nixpkgs packaging
+  mistakes in Nix files, with graalnix's linter, and fixes most of them as quick fixes. Each of its rules can be
+  switched off in the inspection's options.
 - Reformat Code now formats Nix files in the style of nixfmt, with a formatter built into the plugin
   (graalnix's port of nixfmt 1.5.0), unless the project's treefmt formats them.
 
