@@ -6,3 +6,4 @@ intellijPlatform = "2025.3.5"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
+graalnix-format = { module = "org.graalnix:org.graalnix.format", version = "0-SNAPSHOT" }
