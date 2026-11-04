@@ -59,3 +59,8 @@ intellijPlatform {
 tasks.withType<PrepareSandboxTask>().configureEach {
     filePermissions { user { write = true } }
 }
+
+changelog {
+    repositoryUrl = "https://github.com/Allsimon/devenv-intellij"
+    versionPrefix = ""
+}
