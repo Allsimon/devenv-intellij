@@ -2,7 +2,7 @@ package com.allsimon.intellij.nixhighlight;
 
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.psi.tree.IElementType;
-import org.graalnix.parser.Highlighter;
+import org.affogato.parser.Highlighter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;

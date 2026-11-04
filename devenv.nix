@@ -5,7 +5,7 @@
   ...
 }:
 let
-  graalnixMavenRepo = inputs.graalnix.packages.${pkgs.stdenv.hostPlatform.system}.maven-repo;
+  affogatoMavenRepo = inputs.affogato.packages.${pkgs.stdenv.hostPlatform.system}.maven-repo;
 in
 {
   imports = [ ./devenv-test.nix ];
@@ -17,7 +17,7 @@ in
     lsp.enable = false;
   };
 
-  env.GRAALNIX_MAVEN_REPO = graalnixMavenRepo;
+  env.AFFOGATO_MAVEN_REPO = affogatoMavenRepo;
 
   treefmt = {
     enable = true;
@@ -34,6 +34,6 @@ in
   outputs.devenv-intellij = pkgs.callPackage ./package.nix {
     gradle = config.languages.java.gradle.package;
     jdk = config.languages.java.jdk.package;
-    inherit graalnixMavenRepo;
+    inherit affogatoMavenRepo;
   };
 }

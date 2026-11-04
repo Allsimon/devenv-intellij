@@ -5,7 +5,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
-public class GraalnixFormattingServiceTest extends BasePlatformTestCase {
+public class AffogatoFormattingServiceTest extends BasePlatformTestCase {
     public void testReformatsNixFiles() {
         PsiFile file = myFixture.configureByText("default.nix", "{pkgs,...}:{  a  =  1;}");
 
@@ -23,7 +23,7 @@ public class GraalnixFormattingServiceTest extends BasePlatformTestCase {
     }
 
     public void testClaimsOnlyNixFiles() {
-        GraalnixFormattingService service = new GraalnixFormattingService();
+        AffogatoFormattingService service = new AffogatoFormattingService();
 
         assertTrue(service.canFormat(myFixture.configureByText("flake.nix", "{ }")));
         assertFalse(service.canFormat(myFixture.configureByText("notes.txt", "{ }")));

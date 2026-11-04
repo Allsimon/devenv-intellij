@@ -16,11 +16,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
-import org.graalnix.lint.Diagnostic;
-import org.graalnix.lint.Edit;
-import org.graalnix.lint.Linter;
-import org.graalnix.lint.Rule;
-import org.graalnix.lint.Severity;
+import org.affogato.lint.Diagnostic;
+import org.affogato.lint.Edit;
+import org.affogato.lint.Linter;
+import org.affogato.lint.Rule;
+import org.affogato.lint.Severity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * Registered for every language rather than one, since a {@code .nix} file is plain text unless another plugin
  * gives Nix a language of its own.
  */
-public final class GraalnixLintInspection extends LocalInspectionTool {
+public final class AffogatoLintInspection extends LocalInspectionTool {
     private static final String RULE_PREFIX = "rule";
 
     /** Comma-separated ids of the rules switched off. */

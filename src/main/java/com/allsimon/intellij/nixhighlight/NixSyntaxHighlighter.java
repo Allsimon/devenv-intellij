@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
-import org.graalnix.parser.Highlighter.Kind;
+import org.affogato.parser.Highlighter.Kind;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

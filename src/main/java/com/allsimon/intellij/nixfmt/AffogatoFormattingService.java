@@ -5,19 +5,19 @@ import com.intellij.formatting.service.AsyncDocumentFormattingService;
 import com.intellij.formatting.service.AsyncFormattingRequest;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import org.graalnix.format.Formatter;
-import org.graalnix.parser.ParseException;
+import org.affogato.format.Formatter;
+import org.affogato.parser.ParseException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Formats Nix files in process with graalnix's port of nixfmt. Registered after
+ * Formats Nix files in process with affogato's port of nixfmt. Registered after
  * {@link com.allsimon.intellij.treefmt.DevenvTreefmtFormattingService}, so a project whose treefmt
  * formats Nix keeps its own formatter.
  */
-public final class GraalnixFormattingService extends AsyncDocumentFormattingService {
+public final class AffogatoFormattingService extends AsyncDocumentFormattingService {
     @Override
     protected @NotNull String getName() {
         return "nixfmt";

@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.highlighter.HighlighterIterator;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
-import org.graalnix.parser.Highlighter.Kind;
+import org.affogato.parser.Highlighter.Kind;
 
 public class NixHighlightingTest extends BasePlatformTestCase {
     public void testClassifiesNixTokens() {

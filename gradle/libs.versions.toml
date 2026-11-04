@@ -6,5 +6,5 @@ intellijPlatform = "2025.3.5"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
-graalnix-format = { module = "org.graalnix:org.graalnix.format", version = "0-SNAPSHOT" }
-graalnix-lint = { module = "org.graalnix:org.graalnix.lint", version = "0-SNAPSHOT" }
+affogato-format = { module = "org.affogato:org.affogato.format", version = "0-SNAPSHOT" }
+affogato-lint = { module = "org.affogato:org.affogato.lint", version = "0-SNAPSHOT" }
