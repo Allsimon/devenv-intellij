@@ -31,7 +31,7 @@
   one server per `devenv.nix` of the project, each answering for the files of its own root.
 - The `devenv.yaml` and `devenv.local.yaml` of a project with a `devenv.nix` are now mapped to the JSON schema
   devenv publishes at https://devenv.sh/devenv.schema.json, so they get completion, documentation and
-  validation without the `# yaml-language-server: $schema=...` modeline. The IDE downloads the schema once
+  validation without the `yaml-language-server: $schema=...` modeline comment. The IDE downloads the schema once
   and caches it; only IDEs bundling the JSON plugin are concerned, and the YAML plugin is what applies it.
 - The processes declared under `processes` in `devenv.nix` now appear in the Services tool window, with their
   status, per-process start/stop/restart, live logs, and `devenv up -d` / `devenv down` on the root node.
@@ -64,3 +64,7 @@
   IDE and the `treefmt` git hook agree. Other file types keep using the IDE's built-in formatters. The
   `treefmt` of the `devenv.nix` nearest the file is the one that runs, so each module of a project holding
   several is formatted by its own configuration.
+
+[Unreleased]: https://github.com/Allsimon/devenv-intellij/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/Allsimon/devenv-intellij/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/Allsimon/devenv-intellij/commits/1.0.0
