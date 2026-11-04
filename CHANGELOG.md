@@ -6,14 +6,14 @@
 
 ### Added
 
-- Nix files opened as text are now syntax-highlighted with graalnix's highlighter: keywords, strings and
+- Nix files opened as text are now syntax-highlighted with affogato's highlighter: keywords, strings and
   their escapes and interpolations, comments, numbers, paths, attribute names, parameters, builtins and
   constants. A plugin that gives Nix a file type of its own keeps doing the highlighting.
 - A Nix lint inspection reports dead code, simplifiable patterns, undefined variables and nixpkgs packaging
-  mistakes in Nix files, with graalnix's linter, and fixes most of them as quick fixes. Each of its rules can be
+  mistakes in Nix files, with affogato's linter, and fixes most of them as quick fixes. Each of its rules can be
   switched off in the inspection's options.
 - Reformat Code now formats Nix files in the style of nixfmt, with a formatter built into the plugin
-  (graalnix's port of nixfmt 1.5.0), unless the project's treefmt formats them.
+  (affogato's port of nixfmt 1.5.0), unless the project's treefmt formats them.
 
 ### Fixed
 

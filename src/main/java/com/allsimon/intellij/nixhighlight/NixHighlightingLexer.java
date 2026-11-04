@@ -2,7 +2,7 @@ package com.allsimon.intellij.nixhighlight;
 
 import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
-import org.graalnix.parser.Highlighter;
+import org.affogato.parser.Highlighter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Turns graalnix's highlighting spans into the contiguous tokens an editor highlighter wants, plain text filling
+ * Turns affogato's highlighting spans into the contiguous tokens an editor highlighter wants, plain text filling
  * the gaps.
  * <p>
  * The spans depend on what follows them - {@code a} is an attribute name only once {@code =} comes - so the whole

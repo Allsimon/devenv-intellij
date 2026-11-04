@@ -18,11 +18,11 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
 
-        // graalnix's formatter, built by its flake (the maven-repo package): devenv exports it, the Nix build passes -PgraalnixRepo.
-        providers.gradleProperty("graalnixRepo").orElse(providers.environmentVariable("GRAALNIX_MAVEN_REPO")).orNull?.let { repo ->
+        // affogato's formatter, built by its flake (the maven-repo package): devenv exports it, the Nix build passes -PaffogatoRepo.
+        providers.gradleProperty("affogatoRepo").orElse(providers.environmentVariable("AFFOGATO_MAVEN_REPO")).orNull?.let { repo ->
             maven {
                 url = uri(repo)
-                content { includeGroup("org.graalnix") }
+                content { includeGroup("org.affogato") }
             }
         }
 

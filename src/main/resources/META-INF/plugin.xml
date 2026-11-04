@@ -54,12 +54,12 @@
         <formattingService id="devenvTreefmt"
                 implementation="com.allsimon.intellij.treefmt.DevenvTreefmtFormattingService"/>
         <formattingService id="devenvNixfmt" order="after devenvTreefmt"
-                implementation="com.allsimon.intellij.nixfmt.GraalnixFormattingService"/>
+                implementation="com.allsimon.intellij.nixfmt.AffogatoFormattingService"/>
 
-        <localInspection shortName="GraalnixLint" language="" bundle="messages.MyMessageBundle"
+        <localInspection shortName="AffogatoLint" language="" bundle="messages.MyMessageBundle"
                          key="inspection.nixlint.name" groupKey="inspection.nixlint.group"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="com.allsimon.intellij.nixlint.GraalnixLintInspection"/>
+                         implementationClass="com.allsimon.intellij.nixlint.AffogatoLintInspection"/>
 
         <syntaxHighlighter key="PLAIN_TEXT"
                            factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>

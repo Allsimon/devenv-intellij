@@ -41,13 +41,13 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v7
 
-      # The graalnix formatter jars, at the revision devenv.lock pins
+      # The affogato formatter jars, at the revision devenv.lock pins
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Build graalnix
+      - name: Build affogato
         run: |
-          nix build "github:Allsimon/graalnix/$(jq -r .nodes.graalnix.locked.rev devenv.lock)#maven-repo" -o graalnix-repo
-          echo "GRAALNIX_MAVEN_REPO=$PWD/graalnix-repo" >> "$GITHUB_ENV"
+          nix build "github:Allsimon/affogato/$(jq -r .nodes.affogato.locked.rev devenv.lock)#maven-repo" -o affogato-repo
+          echo "AFFOGATO_MAVEN_REPO=$PWD/affogato-repo" >> "$GITHUB_ENV"
 
       # Set up the Java environment for the next steps
       - name: Setup Java
@@ -88,13 +88,13 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v7
 
-      # The graalnix formatter jars, at the revision devenv.lock pins
+      # The affogato formatter jars, at the revision devenv.lock pins
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Build graalnix
+      - name: Build affogato
         run: |
-          nix build "github:Allsimon/graalnix/$(jq -r .nodes.graalnix.locked.rev devenv.lock)#maven-repo" -o graalnix-repo
-          echo "GRAALNIX_MAVEN_REPO=$PWD/graalnix-repo" >> "$GITHUB_ENV"
+          nix build "github:Allsimon/affogato/$(jq -r .nodes.affogato.locked.rev devenv.lock)#maven-repo" -o affogato-repo
+          echo "AFFOGATO_MAVEN_REPO=$PWD/affogato-repo" >> "$GITHUB_ENV"
 
       # Set up the Java environment for the next steps
       - name: Setup Java
@@ -139,13 +139,13 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v7
 
-      # The graalnix formatter jars, at the revision devenv.lock pins
+      # The affogato formatter jars, at the revision devenv.lock pins
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Build graalnix
+      - name: Build affogato
         run: |
-          nix build "github:Allsimon/graalnix/$(jq -r .nodes.graalnix.locked.rev devenv.lock)#maven-repo" -o graalnix-repo
-          echo "GRAALNIX_MAVEN_REPO=$PWD/graalnix-repo" >> "$GITHUB_ENV"
+          nix build "github:Allsimon/affogato/$(jq -r .nodes.affogato.locked.rev devenv.lock)#maven-repo" -o affogato-repo
+          echo "AFFOGATO_MAVEN_REPO=$PWD/affogato-repo" >> "$GITHUB_ENV"
 
       # Set up the Java environment for the next steps
       - name: Setup Java

@@ -7,10 +7,10 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.util.List;
 
-public class GraalnixLintInspectionTest extends BasePlatformTestCase {
+public class AffogatoLintInspectionTest extends BasePlatformTestCase {
     private static final String SAMPLE = "let\n  unused = 1;\n  x = 2;\nin\nx == true\n";
 
-    private final GraalnixLintInspection inspection = new GraalnixLintInspection();
+    private final AffogatoLintInspection inspection = new AffogatoLintInspection();
 
     @Override
     protected void setUp() throws Exception {

@@ -9,8 +9,8 @@ inputs:
     inputs:
       nixpkgs:
         follows: nixpkgs
-  graalnix:
-    url: github:Allsimon/graalnix
+  affogato:
+    url: github:Allsimon/affogato
     inputs:
       nixpkgs:
         follows: nixpkgs

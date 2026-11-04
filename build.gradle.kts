@@ -15,8 +15,8 @@ java {
 
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
-    implementation(libs.graalnix.format)
-    implementation(libs.graalnix.lint)
+    implementation(libs.affogato.format)
+    implementation(libs.affogato.lint)
     testImplementation(libs.junit)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
@@ -55,7 +55,7 @@ intellijPlatform {
     }
 }
 
-// The graalnix jars come read-only from the Nix store; a sandbox copy keeping that mode can't be overwritten by the next one.
+// The affogato jars come read-only from the Nix store; a sandbox copy keeping that mode can't be overwritten by the next one.
 tasks.withType<PrepareSandboxTask>().configureEach {
     filePermissions { user { write = true } }
 }
