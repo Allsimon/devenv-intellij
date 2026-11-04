@@ -2,7 +2,9 @@
 
 # Devenv-intellij Changelog
 
-## [Unreleased]
+## Unreleased
+
+## 1.1.0 - 2026-11-04
 
 ### Added
 
@@ -21,7 +23,7 @@
   `languages.java`, where devenv failed with "The option `languages.java.gradle.package' was accessed but has
   no value defined".
 
-## [1.0.0] - 2026-08-30
+## 1.0.0 - 2026-08-30
 
 ### Added
 
@@ -30,6 +32,7 @@
 - The `devenv.yaml` and `devenv.local.yaml` of a project with a `devenv.nix` are now mapped to the JSON schema
   devenv publishes at https://devenv.sh/devenv.schema.json, so they get completion, documentation and
   validation without the `# yaml-language-server: $schema=...` modeline. The IDE downloads the schema once
+
   and caches it; only IDEs bundling the JSON plugin are concerned, and the YAML plugin is what applies it.
 - The processes declared under `processes` in `devenv.nix` now appear in the Services tool window, with their
   status, per-process start/stop/restart, live logs, and `devenv up -d` / `devenv down` on the root node.
