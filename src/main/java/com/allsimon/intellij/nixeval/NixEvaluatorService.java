@@ -3,7 +3,10 @@ package com.allsimon.intellij.nixeval;
 import com.allsimon.intellij.core.DevenvCli;
 import com.allsimon.intellij.nixlang.NixInjectionSettings;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.util.ExecUtil;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
@@ -40,6 +43,7 @@ public final class NixEvaluatorService implements Disposable {
     private static final String NIXOS_OPTIONS = "(import <nixpkgs/nixos> { configuration = { }; }).options";
     private static final long IDLE_MILLIS = TimeUnit.MINUTES.toMillis(10);
     private static final int PRINT_CONFIG_TIMEOUT_MILLIS = 120_000;
+    private static final int COPY_TIMEOUT_MILLIS = 600_000;
 
     private final Project project;
     private SessionEvaluator session;
@@ -81,6 +85,7 @@ public final class NixEvaluatorService implements Disposable {
                 NixEvaluatorService::printConfig);
         session.main().progress(this::begin);
         session.main().failures(this::warn);
+        session.inputs(NixEvaluatorService::copyInput);
         idleCheck = AppExecutorUtil.getAppScheduledExecutorService()
                 .scheduleWithFixedDelay(this::closeIfIdle, 1, 1, TimeUnit.MINUTES);
     }
@@ -137,6 +142,27 @@ public final class NixEvaluatorService implements Disposable {
                 .getNotificationGroup("Devenv")
                 .createNotification(title + " failed", message, NotificationType.WARNING)
                 .notify(project);
+    }
+
+    /** Has Nix copy a locked flake input from its fetch cache into the store, without the network. */
+    private static boolean copyInput(String ref) {
+        File nix = PathEnvironmentVariableUtil.findInPath("nix");
+        if (nix == null) {
+            return false;
+        }
+        GeneralCommandLine commandLine = new GeneralCommandLine(SessionEvaluator.copyCommand(nix.getPath(), ref))
+                .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+                .withEnvironment(SessionEvaluator.OFFLINE);
+        try {
+            ProcessOutput output = ExecUtil.execAndGetOutput(commandLine, COPY_TIMEOUT_MILLIS);
+            if (output.getExitCode() != 0) {
+                LOG.info("Could not copy " + ref + " into the store: " + output.getStderr());
+            }
+            return output.getExitCode() == 0;
+        } catch (ExecutionException e) {
+            LOG.warn("Failed to run " + commandLine.getCommandLineString(), e);
+            return false;
+        }
     }
 
     private static @Nullable String printConfig(String root) {

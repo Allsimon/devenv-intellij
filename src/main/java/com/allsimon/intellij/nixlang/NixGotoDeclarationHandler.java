@@ -2,6 +2,7 @@ package com.allsimon.intellij.nixlang;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
@@ -14,6 +15,9 @@ import org.jetbrains.annotations.Nullable;
  * {@code import}.
  */
 public final class NixGotoDeclarationHandler implements GotoDeclarationHandler {
+    /** How long it waits for the first evaluation of nixpkgs or an option set, which takes seconds. */
+    private static final long WAIT_NANOS = 30_000_000_000L;
+
     @Override
     public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement source, int offset, Editor editor) {
         PsiFile file = source == null ? null : source.getContainingFile();
@@ -26,6 +30,11 @@ public final class NixGotoDeclarationHandler implements GotoDeclarationHandler {
         }
         Analysis analysis = NixAnalyses.of(file);
         Analysis.Location location = analysis.declaration(offset);
+        long deadline = System.nanoTime() + WAIT_NANOS;
+        while (location == null && System.nanoTime() < deadline && analysis.evaluating(offset)) {
+            ProgressManager.checkCanceled();
+            location = analysis.declaration(offset);
+        }
         if (location != null) {
             PsiElement target = NixAnalyses.at(file.getProject(), location.path(), location.line(), location.column());
             return target == null ? null : new PsiElement[] {target};
