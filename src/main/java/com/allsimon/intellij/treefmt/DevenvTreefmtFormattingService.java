@@ -127,7 +127,8 @@ public final class DevenvTreefmtFormattingService extends AsyncDocumentFormattin
                     fail(MyMessageBundle.message("formatter.treefmt.emptyOutput"));
                     return;
                 }
-                request.onTextReady(formatted);
+                // The platform sets any text it gets, which marks an unchanged file as modified.
+                request.onTextReady(formatted.equals(request.getDocumentText()) ? null : formatted);
             } catch (ExecutionException | RuntimeException e) {
                 LOG.warn("Failed to run '" + commandLine.getCommandLineString() + "'", e);
                 fail(String.valueOf(e.getMessage()));

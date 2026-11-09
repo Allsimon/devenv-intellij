@@ -53,9 +53,11 @@ public final class AffogatoFormattingService extends AsyncDocumentFormattingServ
                 String text = request.getDocumentText();
                 List<TextRange> ranges = request.getFormattingRanges();
                 try {
-                    request.onTextReady(ranges.size() == 1 && !ranges.getFirst().equals(TextRange.allOf(text))
+                    String formatted = ranges.size() == 1 && !ranges.getFirst().equals(TextRange.allOf(text))
                             ? formatRange(text, ranges.getFirst())
-                            : Formatter.format(text));
+                            : Formatter.format(text);
+                    // The platform sets any text it gets, which marks an unchanged file as modified.
+                    request.onTextReady(formatted.equals(text) ? null : formatted);
                 } catch (ParseException e) {
                     request.onError(MyMessageBundle.message("formatter.nixfmt.failed"), e.getMessage(), e.offset);
                 }
