@@ -45,6 +45,8 @@
                 implementation="com.allsimon.intellij.processes.DevenvServiceViewContributor"/>
 
         <writingAccessProvider implementation="com.allsimon.intellij.core.NixStoreWritingAccessProvider"/>
+        <nonProjectFileWritingAccessExtension
+                implementation="com.allsimon.intellij.core.NixStoreWritingAccessProvider$Outside"/>
 
         <directoryIndexExcludePolicy
                 implementation="com.allsimon.intellij.core.DevenvExcludePolicy"/>
