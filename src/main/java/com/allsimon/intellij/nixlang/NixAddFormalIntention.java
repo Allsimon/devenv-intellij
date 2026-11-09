@@ -70,15 +70,22 @@ public final class NixAddFormalIntention extends PsiElementBaseIntentionAction {
         PsiDocumentManager.getInstance(project).commitDocument(document);
     }
 
+    /** Whether {@code child} is the body of {@code with}, where its names may come from, rather than its set. */
+    private static boolean isBody(ASTNode with, ASTNode child) {
+        List<ASTNode> parts = NixFormals.children(with).stream().filter(NixFormals::isExpression).toList();
+        return !parts.isEmpty() && parts.getFirst() != child;
+    }
+
     /** The formals the undefined {@code var} can be added to, or null when it is defined or may come from a {@code with}. */
     private static @Nullable ASTNode formals(NixVarElement var) {
         String name = var.getText();
         if (var.getReference().resolve() != null || Highlighter.nameKind(name) != null || name.equals("or")) {
             return null;
         }
+        PsiElement child = var;
         for (PsiElement parent = var.getParent(); parent != null && !(parent instanceof PsiFile);
-             parent = parent.getParent()) {
-            if (NixFormals.is(parent.getNode(), NodeKind.WITH)) {
+             child = parent, parent = parent.getParent()) {
+            if (NixFormals.is(parent.getNode(), NodeKind.WITH) && isBody(parent.getNode(), child.getNode())) {
                 return null;
             }
             if (NixFormals.is(parent.getNode(), NodeKind.LAMBDA)) {

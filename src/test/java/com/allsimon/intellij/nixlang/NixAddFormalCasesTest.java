@@ -30,8 +30,21 @@ class NixAddFormalCasesTest {
     }
 
     @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "{ ... }: { packages = with pk<caret>gs; [ hello ]; } | { pkgs, ... }: { packages = with pkgs; [ hello ]; }",
+    })
+    void addsTheSetOfAWith(String source, String result) {
+        fixture.run(f -> {
+            f.configureByText("default.nix", source);
+            f.launchAction(f.findSingleIntention("Add 'pkgs' to the function's arguments"));
+            f.checkResult(result);
+        });
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"{ a }: a<caret>", "{ a }: toStr<caret>ing a", "{ pkgs }: with pkgs; hel<caret>lo",
-            "x: und<caret>efined"})
+            "x: und<caret>efined",
+            "{ }: with lib; with pk<caret>gs; [ ]"})
     void isNotOffered(String source) {
         fixture.run(f -> {
             f.configureByText("default.nix", source);
