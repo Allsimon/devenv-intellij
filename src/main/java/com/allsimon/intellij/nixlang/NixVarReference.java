@@ -25,11 +25,6 @@ final class NixVarReference extends PsiReferenceBase<PsiElement> {
     }
 
     @Override
-    public Object @NotNull [] getVariants() {
-        return NixScopes.visible(from).toArray();
-    }
-
-    @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         NixVarElement.replaceIdentifier(getElement(), newElementName);
         return getElement();

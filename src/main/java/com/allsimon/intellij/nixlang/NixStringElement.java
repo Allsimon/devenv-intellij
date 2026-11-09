@@ -2,19 +2,35 @@ package com.allsimon.intellij.nixlang;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.paths.WebReference;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.LiteralTextEscaper;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiLanguageInjectionHost;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.affogato.parser.Lexeme.Kind;
 import org.affogato.parser.NodeKind;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.regex.Pattern;
+
 /** A {@code "..."} or {@code ''...''} string, which another language can be injected into. */
 public final class NixStringElement extends ASTWrapperPsiElement implements PsiLanguageInjectionHost {
+    private static final Pattern URL = Pattern.compile("https?://[^\\s\\\\]+");
+
     NixStringElement(@NotNull ASTNode node) {
         super(node);
+    }
+
+    /** A link to the URL a plain string holds and nothing else. */
+    @Override
+    public PsiReference @NotNull [] getReferences() {
+        TextRange content = contentRange();
+        String text = content.substring(getText());
+        return !isIndented() && getNode().getChildren(null).length == 3 && URL.matcher(text).matches()
+                ? new PsiReference[] {new WebReference(this, content, text)}
+                : PsiReference.EMPTY_ARRAY;
     }
 
     public boolean isIndented() {

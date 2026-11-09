@@ -12,3 +12,4 @@ junit-vintage = { module = "org.junit.vintage:junit-vintage-engine", version.ref
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 affogato-format = { module = "org.affogato:org.affogato.format", version = "0-SNAPSHOT" }
 affogato-lint = { module = "org.affogato:org.affogato.lint", version = "0-SNAPSHOT" }
+affogato-evaluator = { module = "org.affogato:org.affogato.evaluator", version = "0-SNAPSHOT" }

@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-/** Which attributes and builders get Bash injected. */
+/** Which attributes and builders get Bash injected, and what is evaluated. */
 @Service
 @State(name = "NixInjection", storages = @Storage("nix.xml"))
 public final class NixInjectionSettings implements PersistentStateComponent<NixInjectionSettings> {
@@ -28,6 +28,11 @@ public final class NixInjectionSettings implements PersistentStateComponent<NixI
     public String shellAttributes = DEFAULT_SHELL_ATTRIBUTES;
     /** Comma-separated names of the functions whose last argument is a script. */
     public String shellBuilders = DEFAULT_SHELL_BUILDERS;
+    public static final String DEFAULT_NIXPKGS = "import <nixpkgs> { }";
+    /** Whether nixpkgs and the NixOS options are evaluated, for completion, documentation and inlay hints. */
+    public boolean evaluate = true;
+    /** The expression of the nixpkgs that pkgs and lib come from outside a devenv project. */
+    public String nixpkgs = DEFAULT_NIXPKGS;
 
     public static NixInjectionSettings getInstance() {
         return ApplicationManager.getApplication().getService(NixInjectionSettings.class);

@@ -82,6 +82,11 @@
         </intentionAction>
         <intentionAction>
             <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixAttributeQuotesIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
             <className>com.allsimon.intellij.nixlang.NixExpandBindingIntention</className>
             <category>Nix</category>
         </intentionAction>
@@ -138,6 +143,18 @@
         <breadcrumbsInfoProvider implementation="com.allsimon.intellij.nixlang.NixBreadcrumbsProvider"/>
         <codeInsight.parameterInfo language="AffogatoNix"
                                    implementationClass="com.allsimon.intellij.nixlang.NixParameterInfoHandler"/>
+        <completion.contributor language="AffogatoNix"
+                                implementationClass="com.allsimon.intellij.nixlang.NixCompletionContributor"/>
+        <platform.backend.documentation.targetProvider
+                implementation="com.allsimon.intellij.nixlang.NixDocumentationTargetProvider"/>
+        <platform.backend.documentation.lookupElementTargetProvider
+                implementation="com.allsimon.intellij.nixlang.NixDocumentationTargetProvider"/>
+        <gotoDeclarationHandler implementation="com.allsimon.intellij.nixlang.NixGotoDeclarationHandler"/>
+        <codeInsight.declarativeInlayProvider language="AffogatoNix" providerId="nix.versions"
+                                              implementationClass="com.allsimon.intellij.nixlang.NixVersionInlayProvider"
+                                              isEnabledByDefault="true" group="VALUES_GROUP"
+                                              bundle="messages.MyMessageBundle" nameKey="inlay.nix.versions.name"
+                                              descriptionKey="inlay.nix.versions.description"/>
         <lang.findUsagesProvider language="AffogatoNix"
                                  implementationClass="com.allsimon.intellij.nixlang.NixFindUsagesProvider"/>
 
@@ -155,6 +172,11 @@
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>
+
+    <applicationListeners>
+        <listener class="com.allsimon.intellij.nixeval.NixSavedListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </applicationListeners>
 
     <actions>
         <action id="Nix.Evaluate" class="com.allsimon.intellij.nixlang.NixEvalAction"
