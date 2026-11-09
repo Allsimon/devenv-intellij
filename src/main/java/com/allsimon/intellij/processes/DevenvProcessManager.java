@@ -287,7 +287,7 @@ final class DevenvProcessManager implements Disposable {
     void runCommand(@NotNull String title, String @NotNull ... arguments) {
         File executable = DevenvCli.findExecutable();
         if (executable == null) {
-            notifyFailure(title, MyMessageBundle.message("lsp.devenv.executableNotFound", DevenvCli.EXECUTABLE));
+            notifyFailure(title, MyMessageBundle.message("devenv.executableNotFound", DevenvCli.EXECUTABLE));
             return;
         }
         if (!root.isValid()) {

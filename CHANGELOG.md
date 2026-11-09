@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- `.nix` files get a Nix language of their own, on affogato's parser: navigation, rename, injections,
+  refactorings, templates, run configurations and gutter actions.
+- nixpkgs, `lib`, NixOS and devenv options are evaluated in the IDE by affogato: completion with versions,
+  documentation, go to declaration into nixpkgs, and package versions as inlay hints.
+- Reformat Code on a selection formats just the bindings it touches.
+
+### Removed
+
+- `devenv lsp` (nixd) is no longer started: affogato's evaluator answers in its place.
+
 ## [1.1.0] - 2026-11-04
 
 ### Added

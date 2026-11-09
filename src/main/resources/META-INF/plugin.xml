@@ -20,7 +20,6 @@
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
-    <depends>com.intellij.modules.lsp</depends>
     <!-- The Services tool window and its serviceViewContributor extension point live in modules.lang. -->
     <depends>com.intellij.modules.lang</depends>
     <!-- Optional: the Project SDK support needs the Java plugin, which only some IDEs bundle. Every
@@ -42,9 +41,6 @@
     <!-- Extensions defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <platform.lsp.serverSupportProvider
-                implementation="com.allsimon.intellij.lsp.DevenvLspServerSupportProvider"/>
-
         <serviceViewContributor
                 implementation="com.allsimon.intellij.processes.DevenvServiceViewContributor"/>
 

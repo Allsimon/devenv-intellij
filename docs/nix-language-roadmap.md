@@ -70,10 +70,10 @@ affogato's `Tokenizer` and `TreeParser`; the IntelliJ side lives in
 
 ## Nix and devenv awareness
 
-- [x] Completion and documentation for devenv options: from `devenv lsp` (nixd), which the
-      plugin already starts
-- [x] Completion of `pkgs.*` attributes and of `lib.*` with its documentation: from `devenv lsp`
-      (nixd), against the nixpkgs pinned by `devenv.lock`
+- [x] Completion, documentation and go to declaration for `pkgs.*`, `lib.*`, NixOS and devenv
+      options, module arguments and flake inputs and outputs: affogato's evaluator in the IDE
+      (`nixeval`), with devenv's options and nixpkgs from `devenv lsp --print-config`; package
+      versions as inlay hints. Replaces `devenv lsp` (nixd)
 - [x] Gutter actions: `devenv up`/`test` at the top of `devenv.nix`, `processes.foo` to the
       Services view, `nix build`/`run`/`flake check` on a flake's `packages`, `apps` and `checks`
       (`devenv shell` and `nix develop` need a terminal, not a run console)
@@ -105,10 +105,10 @@ need IntelliJ moves into affogato, over its own trees, and both call it.
 - [x] Semantic tokens over the LSP (from affogato's `Highlighter`), and the injections through a
       request of its own, `affogato/injections`
 - [x] Code actions for the lint fixes and the suppression comments
-- [x] Use it from the plugin where IntelliJ's LSP client fits better than PSI: nowhere for now.
-      The plugin calls the code the server serves (lint, formatting, `Scopes`, `Injections`)
-      directly, so running `affogato lsp` too would double the diagnostics, formatting and
-      navigation; `devenv lsp` stays, for what takes evaluating Nix
+- [x] Use it from the plugin where IntelliJ's LSP client fits better than PSI: nowhere.
+      The plugin calls the code the server serves directly: lint, formatting, `Scopes`,
+      `Injections`, and the server's `Analysis` and evaluator for completion, documentation,
+      navigation, inlay hints and range formatting
 
 ## Coexisting with NixIDEA
 
