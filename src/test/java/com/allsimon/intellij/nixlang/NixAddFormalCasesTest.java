@@ -32,6 +32,7 @@ class NixAddFormalCasesTest {
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
             "{ ... }: { packages = with pk<caret>gs; [ hello ]; } | { pkgs, ... }: { packages = with pkgs; [ hello ]; }",
+            "{ ... }: { packages = with pkgs<caret>; [ hello ]; } | { pkgs, ... }: { packages = with pkgs; [ hello ]; }",
     })
     void addsTheSetOfAWith(String source, String result) {
         fixture.run(f -> {

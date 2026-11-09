@@ -27,7 +27,7 @@ public final class NixAddFormalIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        NixVarElement var = PsiTreeUtil.getParentOfType(element, NixVarElement.class, false);
+        NixVarElement var = varAt(editor, element);
         if (var == null || formals(var) == null) {
             return false;
         }
@@ -37,7 +37,7 @@ public final class NixAddFormalIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        NixVarElement var = PsiTreeUtil.getParentOfType(element, NixVarElement.class, false);
+        NixVarElement var = varAt(editor, element);
         ASTNode formals = var == null ? null : formals(var);
         if (formals == null) {
             return;
@@ -68,6 +68,17 @@ public final class NixAddFormalIntention extends PsiElementBaseIntentionAction {
                     "{ " + name + " }");
         }
         PsiDocumentManager.getInstance(project).commitDocument(document);
+    }
+
+    /** The variable at the caret, or ending at it, as in {@code pkgs<caret>;}. */
+    private static @Nullable NixVarElement varAt(Editor editor, PsiElement element) {
+        NixVarElement var = PsiTreeUtil.getParentOfType(element, NixVarElement.class, false);
+        int offset = editor.getCaretModel().getOffset();
+        if (var != null || offset == 0) {
+            return var;
+        }
+        PsiElement before = element.getContainingFile().findElementAt(offset - 1);
+        return PsiTreeUtil.getParentOfType(before, NixVarElement.class, false);
     }
 
     /** Whether {@code child} is the body of {@code with}, where its names may come from, rather than its set. */
