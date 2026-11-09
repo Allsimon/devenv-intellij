@@ -4,6 +4,8 @@ import com.allsimon.intellij.core.DevenvCli;
 import com.allsimon.intellij.nixlang.NixInjectionSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
@@ -78,6 +80,7 @@ public final class NixEvaluatorService implements Disposable {
                 Objects.requireNonNullElse(EnvironmentUtil.getValue("NIX_PATH"), ""),
                 NixEvaluatorService::printConfig);
         session.main().progress(this::begin);
+        session.main().failures(this::warn);
         idleCheck = AppExecutorUtil.getAppScheduledExecutorService()
                 .scheduleWithFixedDelay(this::closeIfIdle, 1, 1, TimeUnit.MINUTES);
     }
@@ -124,6 +127,16 @@ public final class NixEvaluatorService implements Disposable {
             }.queue();
         });
         return () -> done.complete(null);
+    }
+
+    private void warn(String title, String message) {
+        if (project.isDisposed()) {
+            return;
+        }
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("Devenv")
+                .createNotification(title + " failed", message, NotificationType.WARNING)
+                .notify(project);
     }
 
     private static @Nullable String printConfig(String root) {
