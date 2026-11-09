@@ -18,6 +18,7 @@ class NixAddFormalCasesTest {
             "{ stdenv }: fetch<caret>url              | { stdenv, fetchurl }: fetchurl",
             "{ stdenv, ... }: fetch<caret>url         | { stdenv, fetchurl, ... }: fetchurl",
             "{ }: fetch<caret>url                     | { fetchurl }: fetchurl",
+            "{ ... }: fetch<caret>url                 | { fetchurl, ... }: fetchurl",
             "{\\n  stdenv,\\n  ...\\n}:\\nfetch<caret>url\\n | {\\n  stdenv,\\n  fetchurl,\\n  ...\\n}:\\nfetchurl\\n",
     })
     void addsTheVariable(String source, String result) {

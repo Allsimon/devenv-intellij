@@ -156,7 +156,7 @@ public final class NixEvaluatorService implements Disposable {
         try {
             ProcessOutput output = ExecUtil.execAndGetOutput(commandLine, COPY_TIMEOUT_MILLIS);
             if (output.getExitCode() != 0) {
-                LOG.info("Could not copy " + ref + " into the store: " + output.getStderr());
+                LOG.info("Could not copy " + ref + " into the store: " + DevenvCli.failure(output));
             }
             return output.getExitCode() == 0;
         } catch (ExecutionException e) {
@@ -174,7 +174,7 @@ public final class NixEvaluatorService implements Disposable {
             ProcessOutput output = DevenvCli.run(
                     DevenvCli.commandLine(executable, root, "lsp", "--print-config"), PRINT_CONFIG_TIMEOUT_MILLIS);
             if (output.getExitCode() != 0) {
-                LOG.warn("'devenv lsp --print-config' exited with " + output.getExitCode() + ": " + output.getStderr());
+                LOG.warn("'devenv lsp --print-config' exited with " + output.getExitCode() + ": " + DevenvCli.failure(output));
                 return null;
             }
             return output.getStdout();

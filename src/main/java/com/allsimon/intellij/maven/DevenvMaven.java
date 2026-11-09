@@ -91,7 +91,7 @@ final class DevenvMaven {
 
         if (output.getExitCode() != 0) {
             LOG.warn("'devenv eval " + String.join(" ", attributes) + "' exited with "
-                    + output.getExitCode() + ": " + output.getStderr());
+                    + output.getExitCode() + ": " + DevenvCli.failure(output));
             return null;
         }
         return output.getStdout();
