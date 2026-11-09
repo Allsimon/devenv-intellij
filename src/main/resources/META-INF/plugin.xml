@@ -61,13 +61,110 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="com.allsimon.intellij.nixlint.AffogatoLintInspection"/>
 
+        <fileType name="AffogatoNix" language="AffogatoNix" extensions="nix" fieldName="INSTANCE"
+                  implementationClass="com.allsimon.intellij.nixlang.NixFileType"/>
+        <lang.parserDefinition language="AffogatoNix"
+                               implementationClass="com.allsimon.intellij.nixlang.NixParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="AffogatoNix"
+                                       implementationClass="com.allsimon.intellij.nixlang.NixHighlighterFactory"/>
+        <annotator language="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixAnnotator"/>
+        <lang.braceMatcher language="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixBraceMatcher"/>
+        <lang.quoteHandler language="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixQuoteHandler"/>
+        <colorSettingsPage implementation="com.allsimon.intellij.nixlang.NixColorSettingsPage"/>
+        <liveTemplateContext contextId="NIX" implementation="com.allsimon.intellij.nixlang.NixTemplateContextType"/>
+        <defaultLiveTemplates file="/liveTemplates/Nix.xml"/>
+        <codeInsight.template.postfixTemplateProvider language="AffogatoNix"
+                implementationClass="com.allsimon.intellij.nixlang.NixPostfixTemplateProvider"/>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixToggleQuotesIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixExpandBindingIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixCollapseBindingIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixInlineBindingIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixExtractBindingIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixWrapInMkIfIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixUnwrapMkIfIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixAddFormalIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixPrefetchIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <spellchecker.support language="AffogatoNix"
+                              implementationClass="com.allsimon.intellij.nixlang.NixSpellcheckingStrategy"/>
+        <indexPatternBuilder implementation="com.allsimon.intellij.nixlang.NixIndexPatternBuilder"/>
+        <todoIndexer filetype="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixTodoIndexer"/>
+        <lang.elementManipulator forClass="com.allsimon.intellij.nixlang.NixStringElement"
+                                 implementationClass="com.allsimon.intellij.nixlang.NixStringManipulator"/>
+        <lang.elementManipulator forClass="com.allsimon.intellij.nixlang.NixPathElement"
+                                 implementationClass="com.allsimon.intellij.nixlang.NixPathManipulator"/>
+        <multiHostInjector implementation="com.allsimon.intellij.nixlang.NixInjector"/>
+        <applicationConfigurable parentId="language" id="com.allsimon.intellij.nixlang"
+                                 instance="com.allsimon.intellij.nixlang.NixInjectionConfigurable" displayName="Nix"/>
+        <lang.commenter language="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixCommenter"/>
+        <lang.foldingBuilder language="AffogatoNix" implementationClass="com.allsimon.intellij.nixlang.NixFoldingBuilder"/>
+        <lang.psiStructureViewFactory language="AffogatoNix"
+                                      implementationClass="com.allsimon.intellij.nixlang.NixStructureViewFactory"/>
+        <breadcrumbsInfoProvider implementation="com.allsimon.intellij.nixlang.NixBreadcrumbsProvider"/>
+        <codeInsight.parameterInfo language="AffogatoNix"
+                                   implementationClass="com.allsimon.intellij.nixlang.NixParameterInfoHandler"/>
+        <lang.findUsagesProvider language="AffogatoNix"
+                                 implementationClass="com.allsimon.intellij.nixlang.NixFindUsagesProvider"/>
+
         <syntaxHighlighter key="PLAIN_TEXT"
                            factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>
         <syntaxHighlighter key="AUTO_DETECTED"
                            factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>
 
+        <configurationType implementation="com.allsimon.intellij.run.NixRunConfigurationType"/>
+        <consoleFilterProvider implementation="com.allsimon.intellij.run.NixLocationFilter$Provider"/>
+        <consoleFilterProvider implementation="com.allsimon.intellij.run.NixHashMismatchFilter$Provider"/>
+        <runLineMarkerContributor language="AffogatoNix"
+                                  implementationClass="com.allsimon.intellij.run.NixRunLineMarkerContributor"/>
+
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
+    </extensions>
+
+    <actions>
+        <action id="Nix.Evaluate" class="com.allsimon.intellij.nixlang.NixEvalAction"
+                text="Evaluate with nix eval" description="Shows the value nix eval gives for the selection">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="org.intellij.intelliLang">
+        <languageSupport implementation="com.allsimon.intellij.nixlang.NixInjectionSupport"/>
     </extensions>
 
 </idea-plugin>

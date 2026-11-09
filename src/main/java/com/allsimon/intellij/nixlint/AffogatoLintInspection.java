@@ -1,6 +1,7 @@
 package com.allsimon.intellij.nixlint;
 
 import com.allsimon.intellij.core.MyMessageBundle;
+import com.allsimon.intellij.nixlang.NixFile;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
@@ -13,16 +14,20 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.lang.injection.InjectedLanguageManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.affogato.lint.Diagnostic;
 import org.affogato.lint.Edit;
 import org.affogato.lint.Linter;
 import org.affogato.lint.Rule;
 import org.affogato.lint.Severity;
+import org.affogato.lint.Suppressions;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -32,8 +37,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Registered for every language rather than one, since a {@code .nix} file is plain text unless another plugin
- * gives Nix a language of its own.
+ * Registered for every language rather than this plugin's Nix, since a {@code .nix} file may be text or belong to
+ * another plugin's Nix language.
  */
 public final class AffogatoLintInspection extends LocalInspectionTool {
     private static final String RULE_PREFIX = "rule";
@@ -44,7 +49,9 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
     @Override
     public boolean isAvailableForFile(@NotNull PsiFile file) {
         VirtualFile virtualFile = file.getVirtualFile();
-        return virtualFile != null && "nix".equals(virtualFile.getExtension());
+        // An injected fragment, such as the Bash of a phase, is named after its host.
+        return virtualFile != null && "nix".equals(virtualFile.getExtension())
+                && !InjectedLanguageManager.getInstance(file.getProject()).isInjectedFragment(file);
     }
 
     @Override
@@ -77,6 +84,10 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
             return ProblemDescriptor.EMPTY_ARRAY;
         }
         Set<Rule> rules = enabledRules();
+        // The parser already marks its own errors; the linter's syntax error then adds nothing.
+        if (file instanceof NixFile && PsiTreeUtil.hasErrorElements(file)) {
+            rules.remove(Rule.SYNTAX_ERROR);
+        }
         return Linter.lint(text, rules).stream()
                 // The linter reports a syntax error whatever the rules.
                 .filter(diagnostic -> rules.contains(diagnostic.rule()))
@@ -86,13 +97,18 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
 
     private static ProblemDescriptor describe(PsiFile file, InspectionManager manager, boolean isOnTheFly, String text,
                                               Diagnostic diagnostic) {
-        LocalQuickFix[] fixes = diagnostic.fix().isEmpty()
-                ? LocalQuickFix.EMPTY_ARRAY
-                : new LocalQuickFix[]{new LintFix(diagnostic.rule(), diagnostic.start(),
-                text.substring(diagnostic.start(), diagnostic.end()))};
+        List<LocalQuickFix> fixes = new ArrayList<>();
+        if (!diagnostic.fix().isEmpty()) {
+            fixes.add(new LintFix(diagnostic.rule(), diagnostic.start(),
+                    text.substring(diagnostic.start(), diagnostic.end())));
+        }
+        if (diagnostic.rule() != Rule.SYNTAX_ERROR) {
+            fixes.add(new SuppressFix(diagnostic.rule(), false));
+            fixes.add(new SuppressFix(diagnostic.rule(), true));
+        }
         return manager.createProblemDescriptor(file, range(text, diagnostic),
                 StringUtil.escapeXmlEntities(diagnostic.message() + " (" + diagnostic.rule().id() + ")"),
-                highlightType(diagnostic), isOnTheFly, fixes);
+                highlightType(diagnostic), isOnTheFly, fixes.toArray(LocalQuickFix.EMPTY_ARRAY));
     }
 
     /** The finding's range, widened to a character when empty, which the editor would not show. */
@@ -167,6 +183,35 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
             edits.stream()
                     .sorted(Comparator.comparingInt(Edit::start).reversed())
                     .forEach(edit -> document.replaceString(edit.start(), edit.end(), edit.replacement()));
+        }
+    }
+
+    /** Writes the comment that switches the rule off, above the finding's line or atop the file. */
+    private record SuppressFix(Rule rule, boolean wholeFile) implements LocalQuickFix {
+        @Override
+        public @NotNull String getFamilyName() {
+            return MyMessageBundle.message(wholeFile ? "inspection.nixlint.suppress.file"
+                    : "inspection.nixlint.suppress.line", rule.id());
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiFile file = descriptor.getPsiElement().getContainingFile();
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+            if (document == null) {
+                return;
+            }
+            if (wholeFile) {
+                document.insertString(0, Suppressions.ignoreFile(rule) + "\n");
+                return;
+            }
+            int offset = descriptor.getPsiElement().getTextRange().getStartOffset()
+                    + descriptor.getTextRangeInElement().getStartOffset();
+            int lineNumber = document.getLineNumber(offset);
+            int lineStart = document.getLineStartOffset(lineNumber);
+            String line = document.getText(new TextRange(lineStart, document.getLineEndOffset(lineNumber)));
+            String indent = line.substring(0, line.length() - line.stripLeading().length());
+            document.insertString(lineStart, indent + Suppressions.ignore(rule) + "\n");
         }
     }
 }

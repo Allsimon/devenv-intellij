@@ -2,7 +2,8 @@
 
 A project is picked up when it has a `devenv.nix` at its root.
 
-- [Nix editing](lsp.md) - `.nix` files are backed by the language server started by `devenv lsp`
+- [Nix editing](nix.md) - `.nix` files get a Nix language of their own: highlighting, navigation, rename, refactorings, and other languages injected into their strings
+- [Nix language server](lsp.md) - `.nix` files are also backed by the language server started by `devenv lsp`
 - [`devenv.yaml` editing](schema.md) - `devenv.yaml` is mapped to the JSON schema devenv publishes, without the `$schema` modeline
 - [Processes](processes.md) - The processes declared under `processes` appear in the Services tool window
 - [Project SDK](jdk.md) - The Project SDK is set to the JDK devenv declares, and put back when something moves it

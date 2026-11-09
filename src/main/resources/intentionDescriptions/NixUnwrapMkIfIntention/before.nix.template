@@ -1,0 +1,1 @@
+{ services.nginx = lib.mkIf cfg.enable { enable = true; }; }

@@ -3,6 +3,7 @@ package com.allsimon.intellij.nixfmt;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.formatting.service.AsyncDocumentFormattingService;
 import com.intellij.formatting.service.AsyncFormattingRequest;
+import com.intellij.lang.injection.InjectedLanguageManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import org.affogato.format.Formatter;
@@ -36,7 +37,9 @@ public final class AffogatoFormattingService extends AsyncDocumentFormattingServ
     @Override
     public boolean canFormat(@NotNull PsiFile file) {
         VirtualFile virtualFile = file.getVirtualFile();
-        return virtualFile != null && "nix".equals(virtualFile.getExtension());
+        // An injected fragment, such as the Bash of a phase, is named after its host.
+        return virtualFile != null && "nix".equals(virtualFile.getExtension())
+                && !InjectedLanguageManager.getInstance(file.getProject()).isInjectedFragment(file);
     }
 
     @Override

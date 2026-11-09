@@ -8,9 +8,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Colors the {@code .nix} files the IDE opens as text, registered for the plain and auto-detected text file types
- * rather than giving Nix a file type of its own, which would clash with a Nix plugin's. Any other file falls
- * through to the next provider.
+ * Colors the {@code .nix} files the IDE still opens as text, as when the user associated them with Text. Any other
+ * file falls through to the next provider.
  */
 public final class NixSyntaxHighlighterProvider implements SyntaxHighlighterProvider {
     @Override
