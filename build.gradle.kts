@@ -63,6 +63,7 @@ intellijPlatform {
 
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
+        channels = listOf(version.toString().substringAfter('-', "").substringBefore('.').ifEmpty { "default" })
     }
 }
 
