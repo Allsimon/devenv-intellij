@@ -57,7 +57,7 @@ final class DevenvJdk {
 
         if (output.getExitCode() != 0) {
             LOG.warn("'devenv eval " + ENABLE_ATTRIBUTE + " " + HOME_ATTRIBUTE + "' exited with "
-                    + output.getExitCode() + ": " + output.getStderr());
+                    + output.getExitCode() + ": " + DevenvCli.failure(output));
             return null;
         }
 

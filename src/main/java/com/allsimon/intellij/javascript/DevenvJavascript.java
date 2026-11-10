@@ -134,7 +134,7 @@ final class DevenvJavascript {
 
         if (output.getExitCode() != 0) {
             LOG.warn("'devenv eval " + String.join(" ", attributes) + "' exited with " + output.getExitCode()
-                    + ": " + output.getStderr());
+                    + ": " + DevenvCli.failure(output));
             return null;
         }
         return output.getStdout();

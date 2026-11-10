@@ -52,6 +52,50 @@ public class AffogatoLintInspectionTest extends BasePlatformTestCase {
                 "unused let binding 'unused' (unused-let-binding)");
     }
 
+    public void testIgnoresTheShellInjectedIntoAPhase() {
+        myFixture.configureByText("default.nix",
+                "{\n  patchPhase = ''\n    substituteInPlace configure \\\n      --replace /usr/local /\n  '';\n}\n");
+
+        assertEmpty(descriptions(myFixture.doHighlighting(HighlightSeverity.ERROR)));
+    }
+
+    public void testLeavesParseErrorsToTheParser() {
+        myFixture.configureByText("default.nix", "{ a = ; }\n");
+
+        assertSameElements(descriptions(myFixture.doHighlighting(HighlightSeverity.ERROR)), "expected expression");
+    }
+
+    public void testReportsWhatNixRejectsBeyondTheGrammar() {
+        myFixture.configureByText("default.nix", "{ a = 1; a = 2; }\n");
+
+        assertTrue(descriptions(myFixture.doHighlighting(HighlightSeverity.ERROR)).stream()
+                .anyMatch(description -> description.endsWith("(syntax-error)")));
+    }
+
+    public void testSuppressesARuleOnItsLine() {
+        myFixture.configureByText("default.nix", "x: [\n  (x == <caret>true)\n]\n");
+
+        myFixture.launchAction(myFixture.findSingleIntention("Suppress bool-comparison on this line"));
+
+        myFixture.checkResult("x: [\n  # affogato: ignore bool-comparison\n  (x == true)\n]\n");
+        assertEmpty(descriptions(myFixture.doHighlighting(HighlightSeverity.WEAK_WARNING)));
+    }
+
+    public void testSuppressesARuleInTheFile() {
+        myFixture.configureByText("default.nix", "x: x == <caret>true\n");
+
+        myFixture.launchAction(myFixture.findSingleIntention("Suppress bool-comparison in this file"));
+
+        myFixture.checkResult("# affogato: ignore-file bool-comparison\nx: x == true\n");
+    }
+
+    public void testReportsAPlaceholderHash() {
+        myFixture.configureByText("default.nix", "{ lib, fetchurl }: fetchurl { url = \"x\"; hash = lib.fakeHash; }\n");
+
+        assertTrue(descriptions(myFixture.doHighlighting(HighlightSeverity.WEAK_WARNING)).stream()
+                .anyMatch(description -> description.endsWith("(fake-hash)")));
+    }
+
     public void testIgnoresOtherFiles() {
         myFixture.configureByText("notes.txt", SAMPLE);
 

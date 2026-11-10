@@ -3,13 +3,17 @@ package com.allsimon.intellij.nixfmt;
 import com.allsimon.intellij.core.MyMessageBundle;
 import com.intellij.formatting.service.AsyncDocumentFormattingService;
 import com.intellij.formatting.service.AsyncFormattingRequest;
+import com.intellij.lang.injection.InjectedLanguageManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.openapi.util.TextRange;
 import org.affogato.format.Formatter;
+import org.affogato.lsp.Analysis;
 import org.affogato.parser.ParseException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,13 +34,15 @@ public final class AffogatoFormattingService extends AsyncDocumentFormattingServ
 
     @Override
     public @NotNull Set<Feature> getFeatures() {
-        return EnumSet.noneOf(Feature.class);
+        return EnumSet.of(Feature.FORMAT_FRAGMENTS);
     }
 
     @Override
     public boolean canFormat(@NotNull PsiFile file) {
         VirtualFile virtualFile = file.getVirtualFile();
-        return virtualFile != null && "nix".equals(virtualFile.getExtension());
+        // An injected fragment, such as the Bash of a phase, is named after its host.
+        return virtualFile != null && "nix".equals(virtualFile.getExtension())
+                && !InjectedLanguageManager.getInstance(file.getProject()).isInjectedFragment(file);
     }
 
     @Override
@@ -44,11 +50,24 @@ public final class AffogatoFormattingService extends AsyncDocumentFormattingServ
         return new FormattingTask() {
             @Override
             public void run() {
+                String text = request.getDocumentText();
+                List<TextRange> ranges = request.getFormattingRanges();
                 try {
-                    request.onTextReady(Formatter.format(request.getDocumentText()));
+                    String formatted = ranges.size() == 1 && !ranges.getFirst().equals(TextRange.allOf(text))
+                            ? formatRange(text, ranges.getFirst())
+                            : Formatter.format(text);
+                    // The platform sets any text it gets, which marks an unchanged file as modified.
+                    request.onTextReady(formatted.equals(text) ? null : formatted);
                 } catch (ParseException e) {
                     request.onError(MyMessageBundle.message("formatter.nixfmt.failed"), e.getMessage(), e.offset);
                 }
+            }
+
+            /** The text with the bindings the range touches formatted, or all of it outside any; unchanged if it does not parse. */
+            private static String formatRange(String text, TextRange range) {
+                Analysis.Rewrite rewrite = Analysis.formatRange(
+                        text, range.getStartOffset(), range.getEndOffset(), Formatter.DEFAULT_WIDTH, Formatter.DEFAULT_INDENT, false);
+                return rewrite == null ? text : text.substring(0, rewrite.start()) + rewrite.text() + text.substring(rewrite.end());
             }
 
             @Override

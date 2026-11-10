@@ -151,6 +151,15 @@ public final class DevenvCli {
         return ExecUtil.execAndGetOutput(commandLine, timeoutMillis);
     }
 
+    /**
+     * The last line devenv wrote to stderr, as {@code error: ...}, without its colors: the error at the end of the
+     * evaluation trace it prints before.
+     */
+    public static @NotNull String failure(@NotNull ProcessOutput output) {
+        String[] lines = stripAnsi(output.getStderr()).strip().split("\n");
+        return lines[lines.length - 1].strip();
+    }
+
     /** Removes the CSI escape sequences devenv writes even when it isn't attached to a terminal. */
     public static @NotNull String stripAnsi(@NotNull String text) {
         return ANSI_ESCAPE.matcher(text).replaceAll("");

@@ -1,0 +1,4 @@
+fetchurl {
+  url = "https://example.org/a.tar.gz";
+  hash = lib.fakeHash;
+}

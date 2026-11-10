@@ -14,6 +14,15 @@ public class AffogatoFormattingServiceTest extends BasePlatformTestCase {
         myFixture.checkResult("{ pkgs, ... }: { a = 1; }\n");
     }
 
+    public void testLeavesAFormattedFileUnmodified() {
+        PsiFile file = myFixture.configureByText("default.nix", "{ a = 1; }\n");
+        long stamp = myFixture.getEditor().getDocument().getModificationStamp();
+
+        reformat(file);
+
+        assertEquals(stamp, myFixture.getEditor().getDocument().getModificationStamp());
+    }
+
     public void testLeavesInvalidNixUnchanged() {
         PsiFile file = myFixture.configureByText("default.nix", "{ a = ; }");
 

@@ -230,7 +230,7 @@ final class DevenvProcessManager implements Disposable {
             return List.of();
         }
         if (output.getExitCode() != 0) {
-            LOG.warn("'devenv eval processes' exited with " + output.getExitCode() + ": " + output.getStderr());
+            LOG.warn("'devenv eval processes' exited with " + output.getExitCode() + ": " + DevenvCli.failure(output));
             return List.of();
         }
         try {
@@ -287,7 +287,7 @@ final class DevenvProcessManager implements Disposable {
     void runCommand(@NotNull String title, String @NotNull ... arguments) {
         File executable = DevenvCli.findExecutable();
         if (executable == null) {
-            notifyFailure(title, MyMessageBundle.message("lsp.devenv.executableNotFound", DevenvCli.EXECUTABLE));
+            notifyFailure(title, MyMessageBundle.message("devenv.executableNotFound", DevenvCli.EXECUTABLE));
             return;
         }
         if (!root.isValid()) {

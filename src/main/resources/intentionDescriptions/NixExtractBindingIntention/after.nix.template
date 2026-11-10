@@ -1,0 +1,1 @@
+let text = "https://example.org/a.tar.gz"; in { src = fetchurl { url = text; }; }

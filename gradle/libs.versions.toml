@@ -1,10 +1,15 @@
 [versions]
 junit = "4.13.2"
+junit5 = "5.13.4"
 # The IntelliJ Platform every module compiles against. Kept here so the root project and the four
 # feature modules can't drift apart.
 intellijPlatform = "2025.3.5"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit5" }
+junit-vintage = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit5" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 affogato-format = { module = "org.affogato:org.affogato.format", version = "0-SNAPSHOT" }
 affogato-lint = { module = "org.affogato:org.affogato.lint", version = "0-SNAPSHOT" }
+affogato-evaluator = { module = "org.affogato:org.affogato.evaluator", version = "0-SNAPSHOT" }

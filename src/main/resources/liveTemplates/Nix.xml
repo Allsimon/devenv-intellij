@@ -1,0 +1,43 @@
+<templateSet group="Nix">
+  <template name="mkd" value="stdenv.mkDerivation (finalAttrs: {&#10;  pname = &quot;$PNAME$&quot;;&#10;  version = &quot;$VERSION$&quot;;&#10;&#10;  src = $SRC$;&#10;&#10;  meta = {&#10;    description = &quot;$DESCRIPTION$&quot;;&#10;    license = lib.licenses.$LICENSE$;&#10;  };&#10;})" description="stdenv.mkDerivation" toReformat="false" toShortenFQNames="false">
+    <variable name="PNAME" expression="" defaultValue="&quot;hello&quot;" alwaysStopAt="true"/>
+    <variable name="VERSION" expression="" defaultValue="&quot;1.0.0&quot;" alwaysStopAt="true"/>
+    <variable name="SRC" expression="" defaultValue="&quot;./.&quot;" alwaysStopAt="true"/>
+    <variable name="DESCRIPTION" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <variable name="LICENSE" expression="" defaultValue="&quot;mit&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NIX" value="true"/>
+    </context>
+  </template>
+  <template name="mkopt" value="$NAME$ = lib.mkOption {&#10;  type = lib.types.$TYPE$;&#10;  default = $DEFAULT$;&#10;  description = &quot;$DESCRIPTION$&quot;;&#10;};" description="lib.mkOption" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <variable name="TYPE" expression="" defaultValue="&quot;str&quot;" alwaysStopAt="true"/>
+    <variable name="DEFAULT" expression="" defaultValue="&quot;null&quot;" alwaysStopAt="true"/>
+    <variable name="DESCRIPTION" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NIX" value="true"/>
+    </context>
+  </template>
+  <template name="mken" value="$NAME$ = lib.mkEnableOption &quot;$DESCRIPTION$&quot;;" description="lib.mkEnableOption" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;enable&quot;" alwaysStopAt="true"/>
+    <variable name="DESCRIPTION" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NIX" value="true"/>
+    </context>
+  </template>
+  <template name="mod" value="{ config, lib, pkgs, ... }:&#10;let&#10;  cfg = config.$PATH$;&#10;in&#10;{&#10;  options.$PATH$ = {&#10;    enable = lib.mkEnableOption &quot;$DESCRIPTION$&quot;;&#10;  };&#10;&#10;  config = lib.mkIf cfg.enable {&#10;    $END$&#10;  };&#10;}" description="NixOS module with an enable option" toReformat="false" toShortenFQNames="false">
+    <variable name="PATH" expression="" defaultValue="&quot;services.name&quot;" alwaysStopAt="true"/>
+    <variable name="DESCRIPTION" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NIX" value="true"/>
+    </context>
+  </template>
+  <template name="fgh" value="fetchFromGitHub {&#10;  owner = &quot;$OWNER$&quot;;&#10;  repo = &quot;$REPO$&quot;;&#10;  rev = &quot;$REV$&quot;;&#10;  hash = lib.fakeHash;&#10;}" description="fetchFromGitHub" toReformat="false" toShortenFQNames="false">
+    <variable name="OWNER" expression="" defaultValue="&quot;owner&quot;" alwaysStopAt="true"/>
+    <variable name="REPO" expression="" defaultValue="&quot;repo&quot;" alwaysStopAt="true"/>
+    <variable name="REV" expression="" defaultValue="&quot;v1.0.0&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NIX" value="true"/>
+    </context>
+  </template>
+</templateSet>

@@ -1,0 +1,4 @@
+let
+  name = "hello";
+in
+"${name}-1.0"
