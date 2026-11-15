@@ -55,7 +55,7 @@ public final class NixInjectionSettings implements PersistentStateComponent<NixI
     }
 
     Injections.Rules rules() {
-        return new Injections.Rules(shellAttributePattern(), shellBuilderNames());
+        return new Injections.Rules(shellAttributePattern().asMatchPredicate(), shellBuilderNames());
     }
 
     @Override
