@@ -92,7 +92,7 @@ public final class NixInjector implements MultiHostInjector {
         while (previous instanceof PsiWhiteSpace) {
             previous = previous.getPrevSibling();
         }
-        return previous instanceof PsiComment comment && Injections.BLOCK_LANGUAGE.matcher(comment.getText()).matches()
+        return previous instanceof PsiComment comment && Injections.blockLanguage(comment.getText()) != null
                 ? comment.getNode() : null;
     }
 
