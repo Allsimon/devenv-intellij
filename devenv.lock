@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794268071,
-        "narHash": "sha256-NJVViMtXqf+YDTFCkL3QHlSWOCRsUE+S1fQMUgORrXQ=",
+        "lastModified": 1794760800,
+        "narHash": "sha256-Alc5NeNvFWr0K44g3v9l82B4B4FoxaRmZHO7c5ONFLw=",
         "owner": "Allsimon",
         "repo": "affogato",
-        "rev": "a06e26cedd19c651d2428128b8f930e3aec9eeb3",
+        "rev": "bc1acd8444b7edb264125d1d79d83becb704aa20",
         "type": "github"
       },
       "original": {
