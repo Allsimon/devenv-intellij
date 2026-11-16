@@ -157,6 +157,8 @@
                                               descriptionKey="inlay.nix.versions.description"/>
         <lang.findUsagesProvider language="AffogatoNix"
                                  implementationClass="com.allsimon.intellij.nixlang.NixFindUsagesProvider"/>
+        <targetElementEvaluator language="AffogatoNix"
+                                implementationClass="com.allsimon.intellij.nixlang.NixTargetElementEvaluator"/>
 
         <syntaxHighlighter key="PLAIN_TEXT"
                            factoryClass="com.allsimon.intellij.nixhighlight.NixSyntaxHighlighterProvider"/>
@@ -180,7 +182,7 @@
 
     <actions>
         <action id="Nix.Evaluate" class="com.allsimon.intellij.nixlang.NixEvalAction"
-                text="Evaluate with nix eval" description="Shows the value nix eval gives for the selection">
+                text="Evaluate Nix Expression" description="Shows the value of the selection, evaluated in the IDE">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>

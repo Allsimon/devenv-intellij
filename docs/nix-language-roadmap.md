@@ -81,7 +81,7 @@ affogato's `Tokenizer` and `TreeParser`; the IntelliJ side lives in
       `build .#x`, ...), in the devenv root unless set
 - [x] Clickable `/nix/store/...-source/file.nix:line:col` in consoles, leading to the project's
       copy of the file; other absolute `.nix` paths too
-- [x] Evaluate the selection, or the value at the caret, with `nix eval` in the file's directory,
+- [x] Evaluate the selection, or the value at the caret, with affogato's interpreter in the file's directory,
       `pkgs` and `lib` bound when free; the result in a popup
 - [x] Hashes: affogato's `fake-hash` rule marks placeholders; a `got:` hash in a console writes
       itself over the specified one, or the only placeholder; "Prefetch the hash" on `fetchurl` and

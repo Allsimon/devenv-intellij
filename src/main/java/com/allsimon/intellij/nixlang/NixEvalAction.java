@@ -15,7 +15,7 @@ import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** Shows what {@code nix eval} gives for the selection, or for the value of the binding at the caret. */
+/** Shows what affogato's interpreter gives for the selection, or for the value of the binding at the caret. */
 public final class NixEvalAction extends DumbAwareAction {
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
@@ -40,11 +40,11 @@ public final class NixEvalAction extends DumbAwareAction {
             return;
         }
         String expression = NixEval.expression(file, range);
-        String directory = file.getVirtualFile().getParent().getPath();
-        new Task.Backgroundable(file.getProject(), "Evaluating with nix eval", true) {
+        String path = file.getVirtualFile().getPath();
+        new Task.Backgroundable(file.getProject(), "Evaluating", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                NixEval.Outcome outcome = NixEval.evaluate(expression, directory);
+                NixEval.Outcome outcome = NixEval.evaluate(expression, path);
                 ApplicationManager.getApplication().invokeLater(() -> {
                     if (outcome.ok()) {
                         HintManager.getInstance().showInformationHint(editor, outcome.text());

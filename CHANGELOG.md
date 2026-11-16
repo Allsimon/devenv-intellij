@@ -11,6 +11,9 @@
 - nixpkgs, `lib`, NixOS and devenv options are evaluated in the IDE by affogato: completion with versions,
   documentation, go to declaration into nixpkgs, and package versions as inlay hints.
 - Reformat Code on a selection formats just the bindings it touches.
+- Find Usages and Rename follow an attribute selected from `import ./file.nix` across files.
+- A quick fix applies all the Nix lint fixes of a file at once.
+- Evaluate Nix Expression evaluates the selection in the IDE with affogato's interpreter, in place of `nix eval`.
 
 ### Removed
 

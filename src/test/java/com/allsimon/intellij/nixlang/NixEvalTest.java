@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunInEdt(writeIntent = true)
 class NixEvalTest {
-    private static final String TMP = System.getProperty("java.io.tmpdir");
+    private static final String FILE = System.getProperty("java.io.tmpdir") + "/default.nix";
 
     @RegisterExtension
     final NixFixture fixture = new NixFixture();
@@ -24,14 +24,26 @@ class NixEvalTest {
             "[ 1 \"a\" ]                 | [ 1 \"a\" ]",
             "builtins.length [ 1 2 3 ]   | 3",
             "{ a = 1; }.a                | 1",
+            "{ a.b = [ 1 ]; }            | { a = { b = [ 1 ]; }; }",
+            "\"é\"                        | \"é\"",
+            "toString ./a.nix            | \"/tmp/a.nix\"",
     })
     void evaluates(String expression, String value) {
-        assertEquals(new NixEval.Outcome(true, value), NixEval.evaluate(expression, TMP));
+        assertEquals(new NixEval.Outcome(true, value.replace("/tmp", System.getProperty("java.io.tmpdir"))),
+                NixEval.evaluate(expression, FILE));
+    }
+
+    @Test
+    void marksADerivationRatherThanForcingIt() {
+        NixEval.Outcome outcome = NixEval.evaluate(
+                "[ (derivation { name = \"a\"; system = \"x\"; builder = \"/b\"; }) ]", FILE);
+        assertTrue(outcome.ok(), outcome.text());
+        assertTrue(outcome.text().matches("\\[ «derivation /nix/store/[a-z0-9]{32}-a\\.drv» ]"), outcome.text());
     }
 
     @Test
     void reportsTheErrorOfNix() {
-        NixEval.Outcome outcome = NixEval.evaluate("undefinedVariable", TMP);
+        NixEval.Outcome outcome = NixEval.evaluate("undefinedVariable", FILE);
         assertFalse(outcome.ok());
         assertTrue(outcome.text().contains("undefined variable"), outcome.text());
     }

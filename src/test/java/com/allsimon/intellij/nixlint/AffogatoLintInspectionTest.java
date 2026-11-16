@@ -42,6 +42,14 @@ public class AffogatoLintInspectionTest extends BasePlatformTestCase {
         myFixture.checkResult("let\n  x = 2;\nin\nx == true\n");
     }
 
+    public void testFixesAllFindingsOfTheFile() {
+        myFixture.configureByText("default.nix", "f: [\n  (let <caret>a = 1; in f)\n  (y: f y)\n]\n");
+
+        myFixture.launchAction(myFixture.findSingleIntention("Fix all Nix lint problems in the file"));
+
+        myFixture.checkResult("f: [\n  f\n  f\n]\n");
+    }
+
     public void testSkipsDisabledRules() {
         inspection.getOptionController().setOption("rule.bool-comparison", false);
         myFixture.configureByText("default.nix", SAMPLE);

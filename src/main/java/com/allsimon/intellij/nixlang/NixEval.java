@@ -1,25 +1,34 @@
 package com.allsimon.intellij.nixlang;
 
-import com.allsimon.intellij.core.DevenvCli;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
-import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.util.EnvironmentUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.affogato.EvalException;
+import org.affogato.Interpreter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
-/** Evaluates Nix code with {@code nix eval}, the way the file it comes from would see it where it can. */
+/** Evaluates Nix code with affogato's interpreter, the way the file it comes from would see it where it can. */
 final class NixEval {
     /** What evaluating gave: the value Nix printed, or its error. */
     record Outcome(boolean ok, String text) {}
 
     private static final int TIMEOUT_MILLIS = 60_000;
+
+    /** Replaces each derivation with a mark, as {@code nix eval} prints it, rather than forcing all it holds. */
+    private static final String SHOW = """
+            let __show = v: if builtins.isAttrs v then (if v.type or null == "derivation" \
+            then "\u00abderivation ${v.drvPath}\u00bb" else builtins.mapAttrs (_: __show) v) \
+            else if builtins.isList v then map __show v else v; in __show (%s
+            )""";
+    private static final Pattern DERIVATION = Pattern.compile("\"(\u00abderivation [^\"]*\u00bb)\"");
 
     private NixEval() {
     }
@@ -44,22 +53,32 @@ final class NixEval {
         return let.append(" in ").append(code).toString();
     }
 
-    static Outcome evaluate(@NotNull String expression, @NotNull String directory) {
-        File nix = PathEnvironmentVariableUtil.findInPath("nix");
-        if (nix == null) {
-            return new Outcome(false, "'nix' is not on the PATH");
-        }
+    /** Evaluates {@code expression} as if written in the file at {@code file}, which its relative paths start from. */
+    static Outcome evaluate(@NotNull String expression, @NotNull String file) {
+        var options = new Interpreter.Options(Objects.requireNonNullElse(EnvironmentUtil.getValue("NIX_PATH"), ""),
+                "", "", Interpreter.Output.STRICT, "", List.of());
         try {
-            ProcessOutput output = DevenvCli.run(
-                    DevenvCli.commandLine(nix, directory, "eval", "--impure", "--expr", expression), TIMEOUT_MILLIS);
-            if (output.isTimeout()) {
-                return new Outcome(false, "nix eval took longer than " + TIMEOUT_MILLIS / 1000 + " seconds");
-            }
-            return output.getExitCode() == 0
-                    ? new Outcome(true, output.getStdout().strip())
-                    : new Outcome(false, DevenvCli.stripAnsi(output.getStderr()).strip());
-        } catch (ExecutionException e) {
-            return new Outcome(false, e.getMessage());
+            String printed = Interpreter.evaluate(options, file, bytes(SHOW.formatted(expression)), TIMEOUT_MILLIS);
+            return new Outcome(true, DERIVATION.matcher(text(printed)).replaceAll("$1"));
+        } catch (EvalException e) {
+            return new Outcome(false, text(e.getMessage()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new Outcome(false, "interrupted");
         }
+    }
+
+    /** Nix strings are bytes, one char per byte in the interpreter. */
+    private static String bytes(String text) {
+        return new String(text.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+    }
+
+    private static String text(String bytes) {
+        for (int i = 0; i < bytes.length(); i++) {
+            if (bytes.charAt(i) > 0xff) {
+                return bytes;
+            }
+        }
+        return new String(bytes.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
     }
 }

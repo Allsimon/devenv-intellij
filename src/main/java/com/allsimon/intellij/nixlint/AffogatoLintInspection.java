@@ -88,19 +88,21 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
         if (file instanceof NixFile && PsiTreeUtil.hasErrorElements(file)) {
             rules.remove(Rule.SYNTAX_ERROR);
         }
+        FixAll fixAll = new FixAll(Set.copyOf(rules));
         return Linter.lint(text, rules).stream()
                 // The linter reports a syntax error whatever the rules.
                 .filter(diagnostic -> rules.contains(diagnostic.rule()))
-                .map(diagnostic -> describe(file, manager, isOnTheFly, text, diagnostic))
+                .map(diagnostic -> describe(file, manager, isOnTheFly, text, diagnostic, fixAll))
                 .toArray(ProblemDescriptor[]::new);
     }
 
     private static ProblemDescriptor describe(PsiFile file, InspectionManager manager, boolean isOnTheFly, String text,
-                                              Diagnostic diagnostic) {
+                                              Diagnostic diagnostic, FixAll fixAll) {
         List<LocalQuickFix> fixes = new ArrayList<>();
         if (!diagnostic.fix().isEmpty()) {
             fixes.add(new LintFix(diagnostic.rule(), diagnostic.start(),
                     text.substring(diagnostic.start(), diagnostic.end())));
+            fixes.add(fixAll);
         }
         if (diagnostic.rule() != Rule.SYNTAX_ERROR) {
             fixes.add(new SuppressFix(diagnostic.rule(), false));
@@ -183,6 +185,43 @@ public final class AffogatoLintInspection extends LocalInspectionTool {
             edits.stream()
                     .sorted(Comparator.comparingInt(Edit::start).reversed())
                     .forEach(edit -> document.replaceString(edit.start(), edit.end(), edit.replacement()));
+        }
+    }
+
+    /** Applies the fixes of every finding of {@code rules}, in rounds, as {@code affogato fix} does before it formats. */
+    private record FixAll(Set<Rule> rules) implements LocalQuickFix {
+        @Override
+        public @NotNull String getFamilyName() {
+            return MyMessageBundle.message("inspection.nixlint.fix.all");
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiFile file = descriptor.getPsiElement().getContainingFile();
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+            if (document == null) {
+                return;
+            }
+            String text = document.getText();
+            String fixed;
+            try {
+                fixed = Linter.fix(text, rules);
+            } catch (RuntimeException e) {
+                // The text does not parse, or a fix would break it: affogato then fixes nothing.
+                return;
+            }
+            int start = 0;
+            int max = Math.min(text.length(), fixed.length());
+            while (start < max && text.charAt(start) == fixed.charAt(start)) {
+                start++;
+            }
+            int end = 0;
+            while (end < max - start
+                    && text.charAt(text.length() - 1 - end) == fixed.charAt(fixed.length() - 1 - end)) {
+                end++;
+            }
+            // Only the span that changed, so the caret and the markers elsewhere stay put.
+            document.replaceString(start, text.length() - end, fixed.substring(start, fixed.length() - end));
         }
     }
 

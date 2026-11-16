@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.PsiReference;
 import com.intellij.util.IncorrectOperationException;
+import org.affogato.parser.NodeKind;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,17 @@ public final class NixNamedElement extends ASTWrapperPsiElement implements PsiNa
     @Override
     public @Nullable PsiReference getReference() {
         PsiElement from = NixScopes.inheritedFrom(this);
-        return from == null ? null : new NixVarReference(this, from);
+        if (from != null) {
+            return new NixVarReference(this, from);
+        }
+        return isSelected() ? new NixSelectionReference(this) : null;
+    }
+
+    /** Whether this names an attribute a selection picks, as {@code a} in {@code x.a}, rather than declaring one. */
+    boolean isSelected() {
+        ASTNode path = getNode().getTreeParent();
+        ASTNode parent = path == null ? null : path.getTreeParent();
+        return parent != null && path.getElementType() == NixElementTypes.of(NodeKind.ATTR_PATH)
+                && parent.getElementType() == NixElementTypes.of(NodeKind.SELECT);
     }
 }

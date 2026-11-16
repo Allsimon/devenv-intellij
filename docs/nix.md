@@ -28,7 +28,8 @@ NixIDEA claims `.nix` too: with both plugins installed, the IDE asks which one o
 - Completion of the names in scope, builtins and keywords, the attributes of a set the file binds after `s.`,
   and the names a `with` of such a set brings.
 - Go to declaration on `s.a` and on a name a `with` brings leads to the attribute in the set, and on an
-  attribute selected from `import ./file.nix` to its binding in that file.
+  attribute selected from `import ./file.nix` to its binding in that file. Find Usages and Rename follow such an
+  attribute too: from its binding to every file that selects it, and back.
 - URLs in strings are links.
 - Paths such as `./pkgs/hello` refer to their files and directories: they complete, and they follow a file
   that moves or is renamed.
@@ -88,8 +89,9 @@ Live templates: `mkd` (`stdenv.mkDerivation`), `mkopt`, `mken`, `mod` (a module 
   told otherwise.
 - The positions Nix prints in a console, `/nix/store/...-source/pkgs/a.nix:3:5` included, lead to the
   project's file.
-- Evaluate with nix eval, in the editor's context menu, shows the value of the selection, or of the binding at
-  the caret; `pkgs` and `lib` are bound to `<nixpkgs>` when the code uses them without defining them.
+- Evaluate Nix Expression, in the editor's context menu, shows the value of the selection, or of the binding at
+  the caret, evaluated in the IDE by affogato's interpreter; relative paths start from the file's directory, and
+  `pkgs` and `lib` are bound to `<nixpkgs>` when the code uses them without defining them.
 
 ## Hashes
 
@@ -103,4 +105,5 @@ Live templates: `mkd` (`stdenv.mkDerivation`), `mkopt`, `mken`, `mod` (a module 
 
 The [affogato](https://github.com/Allsimon/affogato) linter reports its findings, with their fixes. A comment
 switches a rule off: `# affogato: ignore <rule>` for its line and the next, `# affogato: ignore-file <rule>`
-for the file; Alt+Enter writes them.
+for the file; Alt+Enter writes them. Alt+Enter on a finding with a fix also offers to fix all of them in the
+file, as `affogato fix` does.
