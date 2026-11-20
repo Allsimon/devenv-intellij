@@ -68,7 +68,7 @@ Checklist:
       the file after the IDE has fully indexed the project is a good way to force a retry.
 - [ ] Confirm the plugin itself loaded: `Settings | Plugins | Installed`, search "Devenv", make
       sure there's no error banner. Also check for a `PluginManager - Problems found loading
-plugins` block near the top of `idea.log` and confirm `com.allsimon.devenv` isn't in it.
+  plugins` block near the top of `idea.log` and confirm `com.allsimon.devenv` isn't in it.
 - [ ] Confirm the sandbox IDE edition actually bundles the LSP client module the plugin depends
       on (`<depends>com.intellij.modules.lsp</depends>` in
       [`plugin.xml`][file:plugin.xml]). The `IU-*` sandbox directory name means IntelliJ IDEA
@@ -84,7 +84,7 @@ This means `GeneralCommandLine` failed to launch `devenv`, or `devenv lsp` exite
   [`MyMessageBundle.properties`][file:MyMessageBundle.properties],
   surfaced as a notification and in the log): `PathEnvironmentVariableUtil.findInPath` resolves
   against the **PATH of the JVM running the sandbox IDE**, i.e. whatever environment `gradle
-runIde` itself inherited — not your interactive shell's `PATH` if `runIde` was launched some
+  runIde` itself inherited — not your interactive shell's `PATH` if `runIde` was launched some
   other way (IDE "Run" button with a stale run configuration, a cron/CI job, a GUI launcher).
   Fix: always launch `gradle runIde` from inside `devenv shell` in this repo, so `devenv` (and
   the pinned `JETBRAINS_RUNTIME`, per the comment at the top of

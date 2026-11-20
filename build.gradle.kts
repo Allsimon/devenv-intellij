@@ -55,6 +55,8 @@ dependencies {
 
 
 intellijPlatform {
+    buildSearchableOptions = providers.gradleProperty("buildSearchableOptions").map(String::toBoolean).orElse(true)
+
     signing {
         certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
         privateKey = providers.environmentVariable("PRIVATE_KEY")
