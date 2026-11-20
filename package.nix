@@ -88,8 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-PaffogatoRepo=${affogatoMavenRepo}"
     # buildSearchableOptions starts the downloaded IDE, whose bundled JetBrains
     # Runtime is a prebuilt binary that can't run here.
-    "-x"
-    "buildSearchableOptions"
+    "-PbuildSearchableOptions=false"
   ];
 
   gradleBuildTask = "buildPlugin";
