@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-20
+
 ### Added
 
 - `.nix` files get a Nix language of their own, on affogato's parser: navigation, rename, injections,
@@ -80,6 +82,7 @@
   `treefmt` of the `devenv.nix` nearest the file is the one that runs, so each module of a project holding
   several is formatted by its own configuration.
 
-[Unreleased]: https://github.com/Allsimon/devenv-intellij/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/Allsimon/devenv-intellij/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/Allsimon/devenv-intellij/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/Allsimon/devenv-intellij/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/Allsimon/devenv-intellij/commits/1.0.0
