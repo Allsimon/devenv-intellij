@@ -13,3 +13,4 @@ junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 affogato-format = { module = "org.affogato:org.affogato.format", version = "0-SNAPSHOT" }
 affogato-lint = { module = "org.affogato:org.affogato.lint", version = "0-SNAPSHOT" }
 affogato-evaluator = { module = "org.affogato:org.affogato.evaluator", version = "0-SNAPSHOT" }
+affogato-update = { module = "org.affogato:org.affogato.update", version = "0-SNAPSHOT" }

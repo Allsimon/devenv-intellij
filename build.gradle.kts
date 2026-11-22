@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.affogato.format)
     implementation(libs.affogato.lint)
     implementation(libs.affogato.evaluator)
+    implementation(libs.affogato.update)
     testImplementation(libs.junit)
     // Parameterized tests run on JUnit 5; the vintage engine keeps running the JUnit 3/4 platform tests.
     testImplementation(platform("org.junit:junit-bom:${libs.versions.junit5.get()}"))

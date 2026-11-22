@@ -1,0 +1,10 @@
+stdenv.mkDerivation (finalAttrs: {
+  pname = "hello";
+  version = "1.2";
+  src = fetchFromGitHub {
+    owner = "acme";
+    repo = "hello";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  };
+})

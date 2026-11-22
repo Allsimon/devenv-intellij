@@ -5,6 +5,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import org.affogato.parser.Highlighter;
@@ -13,7 +14,7 @@ import org.affogato.parser.NodeKind;
 import org.jetbrains.annotations.NotNull;
 
 /** Colors what the tokens alone don't tell: attribute names, parameters, builtins and interpolation braces. */
-public final class NixAnnotator implements Annotator {
+public final class NixAnnotator implements Annotator, DumbAware {
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
         ASTNode node = element.getNode();
