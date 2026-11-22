@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- Update a package to its latest version with affogato's updater: the intentions _Update hello_ and
+  _Refresh the hashes of hello_ on a package fetched from GitHub, GitLab, Gitea, Codeberg, SourceHut,
+  Bitbucket, PyPI, crates.io or a URL with its version. They update its version, its hashes and its lock
+  files, and cancelling stops the fetch or build under way.
+- A weak warning marks each package that has a newer version, with the update as its fix.
+- Tools > Update Nix Packages updates every package of the selection, or of the project.
+- The Nix Packages tool window lists the packages of the project with their version and the latest one,
+  with buttons to update them or refresh their hashes.
+
 ## [2.0.0] - 2026-11-20
 
 ### Added
