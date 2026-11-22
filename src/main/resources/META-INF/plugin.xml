@@ -125,6 +125,16 @@
             <className>com.allsimon.intellij.nixlang.NixPrefetchIntention</className>
             <category>Nix</category>
         </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixUpdatePackageIntention</className>
+            <category>Nix</category>
+        </intentionAction>
+        <intentionAction>
+            <language>AffogatoNix</language>
+            <className>com.allsimon.intellij.nixlang.NixRefreshHashesIntention</className>
+            <category>Nix</category>
+        </intentionAction>
         <spellchecker.support language="AffogatoNix"
                               implementationClass="com.allsimon.intellij.nixlang.NixSpellcheckingStrategy"/>
         <indexPatternBuilder implementation="com.allsimon.intellij.nixlang.NixIndexPatternBuilder"/>
@@ -171,6 +181,11 @@
         <runLineMarkerContributor language="AffogatoNix"
                                   implementationClass="com.allsimon.intellij.run.NixRunLineMarkerContributor"/>
 
+        <externalAnnotator language="AffogatoNix"
+                           implementationClass="com.allsimon.intellij.nixlang.NixOutdatedAnnotator"/>
+        <toolWindow id="Nix Packages" anchor="bottom" secondary="true" icon="AllIcons.Nodes.PpLib"
+                    factoryClass="com.allsimon.intellij.nixupdate.NixPackagesToolWindowFactory"/>
+
         <notificationGroup id="Devenv" displayType="BALLOON"
                            bundle="messages.MyMessageBundle" key="notification.devenv.group"/>
     </extensions>
@@ -184,6 +199,12 @@
         <action id="Nix.Evaluate" class="com.allsimon.intellij.nixlang.NixEvalAction"
                 text="Evaluate Nix Expression" description="Shows the value of the selection, evaluated in the IDE">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+        <action id="Nix.UpdatePackages" class="com.allsimon.intellij.nixupdate.NixUpdateWorkspaceAction"
+                text="Update Nix Packages"
+                description="Updates the packages of the selected Nix files and directories, else of the project, to their latest version">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 
